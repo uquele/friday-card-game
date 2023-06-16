@@ -50,7 +50,7 @@ shuffle(deckPirates)
 
 
 
-/**
+/** Removes one card from the deck
  * 
  * @param {Object} cardQuery - for example, {name: 'Very stupid'}
  * @param {Array} deck 
@@ -67,8 +67,7 @@ function removeCard(cardQuery, deck) {  //
   return removedCard;
 }
 
-
-/**
+/** Moves one card from one deck to another
  * 
  * @param {Object} cardQuery - for example, {name: 'Very stupid'}
  * @param {Array} deckFrom 
@@ -96,7 +95,7 @@ function moveCard(cardQuery, deckFrom, deckTo, position = 'bottom') {
   return
 }
 
-/**
+/** Draws one card from the deck
  * 
  * @param {Array} deck 
  * @param {String} location - 'top', 'bottom', 'random'

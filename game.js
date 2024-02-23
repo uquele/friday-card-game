@@ -1,18 +1,27 @@
 'use strict'
-//@ts-check
 
-const cards = parseTSV(CARDS_TSV)
-// console.table(cards)
+import { createDeckAllCards } from "./card-creation/createDeckAllCards.js"
+
+//@ts-check
 
 
 // INITIAL SETUP
 
-const deckFighting = cards.filter(card => card.type === 'Fighting')
+
+const CARDS = createDeckAllCards()
+
+
+
+
+
+
+
+const deckFighting = []
 const deckFightingDiscard = []
-const deckHazard = cards.filter(card => card.type === 'Hazard')
+const deckHazard = cards.filter(card => card.type === 'hazard')
 const deckHazardDiscard = []
-const deckAging = cards.filter(card => card.type === 'Aging')
-const deckPirates = cards.filter(card => card.type === 'Pirates')
+const deckAging = cards.filter(card => card.type === 'aging')
+const deckPirates = cards.filter(card => card.type === 'pirates')
 
 const currentHazard = []
 const deckLeftSide = []
@@ -24,10 +33,10 @@ let livesMax = 22
 
 switch (difficultyLevel) {
   case 1:
-    removeCard({name: 'Very stupid'}, deckAging)
+    removeCard({ name: 'Very stupid' }, deckAging)
     break
   case 2:
-    removeCard({name: 'Very stupid'}, deckAging)
+    removeCard({ name: 'Very stupid' }, deckAging)
     deckFighting.push(drawCard(deckAging, 'random'))
     break
   case 3:

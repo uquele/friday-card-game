@@ -55,6 +55,8 @@ export class CardPirates {
   }
 }
 
+// uses
+
 function checkForNoUndefinedValues(obj) {
   const isUndefined = [...Object.values(obj)].some(value => value === undefined)
   if (isUndefined) throw new TypeError(`Required parameter is undefined`)

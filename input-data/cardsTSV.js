@@ -1,5 +1,5 @@
 // TSV format is used for convenience.
-// See ODS spreadsheet for reference, make changes there, copy-paste spreadsheet cells here to apply changes.
+// Use ODS spreadsheet, make changes there, copy-paste spreadsheet cells here to apply changes.
 
 export const CARDS_TSV = `id	type	name	power	skillName	removeCost	phaseGreen	phaseYellow	phaseRed	draw	agingType	agingEffectName	pirateEffectName
 1	fighting	Weak	-1		1							

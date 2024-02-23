@@ -1,11 +1,23 @@
-import { CARDS_TSV } from "./cardsTSV.js"
+//@ts-check
+
+import { CARDS_TSV } from "../input-data/cardsTSV.js"
+import { parseTSV } from "../utils/parseTSV.js"
 import { CardFighting, CardHazard, CardAging, CardPirates } from "./cardClasses.js"
 
+/**
+ * @typedef {CardAging | CardFighting | CardHazard | CardPirates} Card
+ */
 
-export function createDeckAllCards() {
+/**
+ * 
+ * @returns {Card[]}
+ */
+export function createAllCards() {
   const cards = []
 
-  CARDS_TSV.forEach((card) => {
+  const cardsRaw = parseTSV(CARDS_TSV)
+
+  cardsRaw.forEach((card) => {
     let newCard
 
     switch (card.type) {

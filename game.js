@@ -7,7 +7,7 @@ import { Deck } from "./card-creation/deck.js"
 
 // INITIAL SETUP //
 
-let difficultyLevel = 1 // not in use
+let difficultyLevel = 1 // not implemented
 let lives = 20
 let livesMax = 22
 let phase = 'green' // -> yellow -> red
@@ -45,7 +45,16 @@ while (deckPirates.length > 2) {
 const deckRobinsonDiscard = new Deck()
 const deckHazardDiscard = new Deck()
 
+// setup check
 
+console.log('deckRobinson')
+console.log(deckRobinson)
+console.log('deckHazard')
+console.log(deckHazard)
+console.log('deckAging')
+console.log(deckAging)
+console.log('deckPirates')
+console.log(deckPirates)
 
 
 
@@ -55,30 +64,25 @@ const deckRightSide = []
 
 
 
-switch (difficultyLevel) {
-  case 1:
-    removeCard({ name: 'Very stupid' }, deckAging)
-    break
-  case 2:
-    removeCard({ name: 'Very stupid' }, deckAging)
-    deckFighting.push(drawCard(deckAging, 'random'))
-    break
-  case 3:
-    deckFighting.push(drawCard(deckAging, 'random'))
-    break
-  case 4:
-    lives = 18
-    livesMax = 20
-    deckFighting.push(drawCard(deckAging, 'random'))
-    break
-  default:
-    throw new TypeError(`Difficulty level not found: ${level}`)
-}
-
-shuffle(deckFighting)
-shuffle(deckHazard)
-shuffle(deckAging)
-shuffle(deckPirates)
+// switch (difficultyLevel) {
+//   case 1:
+//     removeCard({ name: 'Very stupid' }, deckAging)
+//     break
+//   case 2:
+//     removeCard({ name: 'Very stupid' }, deckAging)
+//     deckFighting.push(drawCard(deckAging, 'random'))
+//     break
+//   case 3:
+//     deckFighting.push(drawCard(deckAging, 'random'))
+//     break
+//   case 4:
+//     lives = 18
+//     livesMax = 20
+//     deckFighting.push(drawCard(deckAging, 'random'))
+//     break
+//   default:
+//     throw new TypeError(`Difficulty level not found: ${level}`)
+// }
 
 
 

@@ -2,7 +2,7 @@
 'use strict'
 
 import { createAllCards } from "./js/card-creation/createAllCards.js"
-import { Deck } from "./js/card-creation/deck.js"
+import { Deck } from "./js/card-creation/deckClass.js"
 
 
 // INITIAL SETUP //

@@ -9,7 +9,7 @@ img {
   height: 400px;
 }
 
-.card-hazard {
+:root {
   --card-scale: 1;
   --card-width: calc(223px * var(--card-scale));
   --card-height: calc(var(--card-width) * 1.78);
@@ -41,15 +41,25 @@ img {
   --card-color-danger-border: #3c793b;
   --card-color-lives-bg: #edcd82;
   --card-color-lives-font: #61a526;
+
+  --deck-color-bg: #254820;
+  --deck-color-font: #3e7a36;
+  --deck-discard-color-bg: #70522c;
+  --deck-discard-color-font: #a27944;
+  --deck-cards-in-deck-font-size: calc(var(--card-width) / 223 * 150);
+  --deck-name-font-size: calc(var(--card-width) / 223 * 40);
+  --deck-name-margin-top: calc(var(--card-width) / 223 * 20);
+}
+
+.card-hazard.card-as-robinson {
+  rotate: 180deg;
 }
 
 .card-hazard {
-  rotate: 180deg;
-
   width: var(--card-width);
   border: 1px solid black;
   background-color: var(--card-color-bg);
-
+  
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
   font-size: var(--card-font-size);
   box-sizing: border-box;
@@ -212,4 +222,66 @@ img {
   line-height: 1;
   padding: 2% 0;
   border-radius: 0 0 var(--card-text-border-radius) var(--card-text-border-radius);
+}
+
+/* ROBINSON CARD, NO HAZARD PART */
+
+.card-robinson .half:nth-child(1) {
+  rotate: 180deg;
+}
+.card-robinson .robinson-half {
+  border: none;
+}
+
+.card-robinson .effect-name {
+  border-radius: var(--card-text-border-radius);
+}
+
+/* DECK */
+
+.deck {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  
+  width: var(--card-width);
+  height: var(--card-height);
+  border: 1px solid black;
+  border-radius: var(--card-border-radius);
+  background-color: var(--deck-color-bg);
+
+  position: relative;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-weight: bold;
+  color: var(--deck-color-font);
+}
+
+.deck .cards-in-deck,
+.deck .deck-name {
+  display: grid;
+  place-items: center;
+  position: absolute;
+}
+
+.deck .cards-in-deck {
+  width: 100%;
+  height: 100%;
+  font-size: var(--deck-cards-in-deck-font-size);
+}
+
+.deck .deck-name {
+  width: 100%;
+  margin-top: var(--deck-name-margin-top);
+  font-size: var(--deck-name-font-size);
+}
+
+/* DISCARD DECK */
+
+.deck-discard {
+  background-color: var(--deck-discard-color-bg);
+  color: var(--deck-discard-color-font);
+}
+
+.deck-discard .deck-name-discard {
+  margin-top: calc(var(--deck-name-margin-top) + var(--deck-name-font-size))
 }

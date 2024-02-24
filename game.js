@@ -1,8 +1,8 @@
 //@ts-check
 'use strict'
 
-import { createAllCards } from "./card-creation/createAllCards.js"
-import { Deck } from "./card-creation/deck.js"
+import { createAllCards } from "./js/card-creation/createAllCards.js"
+import { Deck } from "./js/card-creation/deck.js"
 
 
 // INITIAL SETUP //

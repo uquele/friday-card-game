@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friday</title>
+    <style>
+        :root {
+            --color-card-background: rgb(172, 207, 172);
+            --color-card-border: black;
+            --color-card-free-draw-border: gray;
+            --color-card-free-draw-background: ivory;
+            --color-card-hazard-circles-border: green;
+            --color-card-hazard-red-background: rgb(219, 89, 89);
+            --color-card-hazard-yellow-background: rgb(219, 217, 89);
+            --color-card-hazard-green-background: rgb(107, 199, 80);
+            --color-card-hazard-name-background: var(--color-card-free-draw-background);
+            --color-card-hazard-name-border: gray;
+        }
+        div {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+
+        /* HAZARD CARD - COMMON STYLES */
+
+        .card-hazard {
+            border: 1px solid var(--color-card-border);
+            display: inline-block;
+            width: 135px;
+            height: 226px;
+            background-color: var(--color-card-background);
+        }
+
+        .card-hazard .danger-red {
+            background-color: var(--color-card-hazard-red-background);
+        }
+        .card-hazard .danger-yellow {
+            background-color: var(--color-card-hazard-yellow-background);
+        }
+        .card-hazard .danger-green {
+            background-color: var(--color-card-hazard-green-background);
+        }
+
+        /* HAZARD SIDE */
+        /* top */
+        .card-as-hazard .hazard-half {
+            height: 113px;
+            border: 1px solid var(--color-card-border);
+            position: relative;
+        }
+        .card-as-hazard .hazard-half .free-draw {
+            border: 1px solid var(--color-card-free-draw-border);
+            width: 30px;
+            height: 20px;
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+            display: grid;
+            place-items: center;
+            background-color: var(--color-card-free-draw-background);
+        }
+        .card-as-hazard .hazard-half .danger-levels {
+            /* border: 1px solid gray; */
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+        }
+        .card-as-hazard .hazard-half .danger-levels div {
+            border: 1px solid var(--color-card-hazard-circles-border);
+            width: 20px;
+            height: 20px;
+            border-radius: 25px;
+            display: grid;
+            place-items: center;
+            margin-top: 2px;
+        }
+        .card-as-hazard .hazard-half .hazard-name {
+            border: 1px solid var(--color-card-hazard-name-border);
+            font-weight: 100;
+            font-size: 12px;
+            text-align: center;
+            width: 100px;
+            /* height: 20px; */
+            margin: auto;
+            background-color: var(--color-card-hazard-name-background);
+        }
+
+        /* bottom */
+        .card-as-hazard .robinson-half {
+            height: 113px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .card-as-hazard .robinson-half .effect-name {
+            border: 1px solid gray;
+            font-weight: 100;
+            font-size: 12px;
+            text-align: center;
+            position: absolute;
+            top: 5px;
+            left: 16px;
+            width: 100px;
+            /* height: 20px; */
+            margin: auto;
+            background-color: ivory;
+        }
+        .card-as-hazard .robinson-half .lives {
+            border: 1px solid green;
+            border-radius: 25px;
+            position: absolute;
+            bottom: 2px;
+            left: 2px;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            background-color: rgb(214, 205, 124);
+            color: green;
+            font-size: 20px;
+        }
+        .card-as-hazard .robinson-half .power {
+            /* border: 1px solid gray; */
+            position: absolute;
+            right: 0;
+            bottom: 1px;
+            font-size: 25px;
+            width: 30px;
+            height: 30px;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            text-align: center;
+            background-color: ivory;
+        }
+        .card-as-hazard .robinson-half .mood {
+            border: 1px solid gray;
+            position: absolute;
+            bottom: 1px;
+            width: 70px;
+            left: 30px;
+            font-weight: 100;
+            font-size: 12px;
+            background-color: ivory;
+            text-align: center;
+        }
+
+        /* ROBINSON SIDE */
+        /* top */
+        .card-as-robinson .robinson-half {
+            height: 113px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .card-reverse-upper-left {
+            border: 1px solid gray;
+            width: 30px;
+            height: 20px;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            text-align: center;
+            background-color: ivory;
+        }
+        .card-reverse-upper-right {
+            /* border: 1px solid gray; */
+            position: absolute;
+            left: 5px;
+            top: 5px;
+        }
+        .card-reverse-upper-right div {
+            border: 1px solid green;
+            width: 20px;
+            height: 20px;
+            border-radius: 25px;
+            text-align: center;
+            margin-top: 2px;
+        }
+        .card-reverse-upper-top {
+            border: 1px solid gray;
+            font-weight: 100;
+            font-size: 12px;
+            text-align: center;
+            width: 100px;
+            /* height: 20px; */
+            margin: auto;
+            background-color: ivory;
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+        }
+
+        /* bottom */
+        .card-reverse-lower {
+            height: 113px;
+            border: 1px solid black;
+            position: relative;
+        }
+        .card-as-robinson .effect-name {
+            border: 1px solid gray;
+            font-weight: 100;
+            font-size: 12px;
+            text-align: center;
+            position: absolute;
+            bottom: 5px;
+            right: 16px;
+            width: 100px;
+            /* height: 20px; */
+            margin: auto;
+            background-color: ivory;
+        }
+        .card-reverse-lower-left {
+            border: 1px solid green;
+            border-radius: 25px;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            background-color: rgb(214, 205, 124);
+            color: green;
+            font-size: 20px;
+        }
+        .card-reverse-lower-right {
+            /* border: 1px solid gray; */
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 25px;
+            width: 30px;
+            height: 30px;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            text-align: center;
+            background-color: ivory;
+        }
+        .card-reverse-lower-bottom {
+            border: 1px solid gray;
+            position: absolute;
+            top: 0;
+            width: 70px;
+            right: 30px;
+            font-weight: 100;
+            font-size: 12px;
+            background-color: ivory;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Friday</h1>
+    <p>Card:</p>
+    <div class="card-hazard card-as-hazard">
+        <div class="hazard-half">
+            <div class="free-draw">2</div>
+            <div class="danger-levels">
+                <div class="danger-red">11</div>
+                <div class="danger-yellow">3</div>
+                <div class="danger-green">1</div>
+            </div>
+            <div class="hazard-name">Hazard name</div>
+        </div>
+
+        <div class="robinson-half">
+            <div class="effect-name">Effect name</div>
+            <div class="lives">l</div>
+            <div class="power">1</div>
+            <div class="mood">Mood</div>
+        </div>
+    </div>
+    <p>Reverse:</p>
+    
+    <div class="card-hazard card-as-robinson">
+        <div class="robinson-half">
+            <div class="effect-name">Effect name</div>
+            <div class="card-reverse-lower-left">l</div>
+            <div class="card-reverse-lower-right">1</div>
+            <div class="card-reverse-lower-bottom">Mood</div>
+        </div>
+
+        <div class="card-reverse-lower">
+            <div class="card-reverse-upper-left">2</div>
+            <div class="card-reverse-upper-right">
+                <div class="danger-green">1</div>
+                <div class="danger-yellow">3</div>
+                <div class="danger-red">6</div>
+            </div>
+            <div class="card-reverse-upper-top">Danger name</div>
+        </div>
+    </div>
+</body>
+</html>

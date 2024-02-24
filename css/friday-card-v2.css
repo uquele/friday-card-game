@@ -7,7 +7,7 @@ img {
 }
 
 :root {
-  --card-scale: 0.6;
+  --card-scale: 0.8;
   --card-width: calc(223px * var(--card-scale));
   --card-height: calc(var(--card-width) * 1.78);
   --card-height-half: calc(var(--card-height) / 2);
@@ -32,8 +32,11 @@ img {
   --card-color-fighting-bg: #cce3a7;
   --card-color-border-middle: #917824;
   --card-color-danger-red: #dc6520;
+  --card-color-danger-red-inactive: var(--card-color-bg);
   --card-color-danger-yellow: #f3e906;
+  --card-color-danger-yellow-inactive: var(--card-color-bg);
   --card-color-danger-green: #4eab37;
+  --card-color-danger-green-inactive: var(--card-color-bg);
   --card-color-danger-font: #222408;
   --card-color-danger-border: #3c793b;
   --card-color-lives-bg: #edcd82;
@@ -56,7 +59,7 @@ img {
   width: var(--card-width);
   border: 1px solid black;
   background-color: var(--card-color-bg);
-  
+
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
   font-size: var(--card-font-size);
   box-sizing: border-box;
@@ -165,6 +168,18 @@ img {
 
 .card-hazard .danger-green {
   background-color: var(--card-color-danger-green);
+}
+
+.card-hazard .danger-red.inactive{
+  background-color: var(--card-color-danger-red-inactive);
+}
+
+.card-hazard .danger-yellow.inactive{
+  background-color: var(--card-color-danger-yellow-inactive);
+}
+
+.card-hazard .danger-green.inactive{
+  background-color: var(--card-color-danger-green-inactive);
 }
 
 /* ROBINSON SIDE */

@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 
 html {
@@ -11,10 +12,13 @@ html {
 
 #field {
   display: grid;
+  /* align-items: center; */
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas: 
-    "deckHazardDiscard    pirates      deckAgingAndFightingDiscard"
-    "deckHazard           lives        deckFighting"
-    "playArea             playArea     playArea";
+  "deckHazardDiscard    pirates      deckAgingAndFightingDiscard"
+  "deckHazard           dashboard    deckFighting"
+  "playArea             playArea     playArea";
   
   --margin: 10px;
   margin: var(--margin);
@@ -22,24 +26,99 @@ html {
   height: calc(100vh - var(--margin) * 2);
 }
 
+#field > * {
+  border: 1px dashed black;
+  display: grid;
+  align-items: center;
+}
+
 #grid-deck-hazard {
   grid-area: deckHazard;
 }
 
-#grid-deck-fighting {
-  grid-area: deckFighting;
-}
-
 #grid-deck-aging-and-fighting-discard {
   grid-area: deckAgingAndFightingDiscard;
+  display: flex;
+  gap: 10px;
+  justify-content: right;
+}
+
+#grid-deck-fighting {
+  grid-area: deckFighting;
+  display: flex;
+  justify-content: right;
 }
 
 #grid-deck-hazard-discard {
   grid-area: deckHazardDiscard;
 }
 
+#dashboard {
+  grid-area: dashboard;
+  place-items: center;
+  font-size: 20px;
+}
+
+#lives,
+#phase {
+  justify-self: right;
+  margin-right: 20px;
+}
+
+#lives {
+  font-size: 30px;
+  font-weight: bold;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+#dashboard button {
+  padding: 10px;
+}
+
 #play-area {
   grid-area: playArea;
   display: flex;
+  gap: 20px;
+  transition: background-color 1s;
+}
+
+#deck-left,
+#deck-center,
+#deck-right {
+  height: 100%;
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
+}
+
+#deck-left {
+  flex-grow: 1;
+  justify-content: right;
+}
+
+#deck-center {
+  flex-grow: 0;
+}
+
+#deck-right {
+  flex-grow: 1;
+  justify-content: left;
+}
+
+/* SET BY JAVASCRIPT */
+
+.phase-green {
+  background-color: rgba(0, 128, 0, 0.1);
+}
+
+.phase-yellow {
+  background-color:rgba(255, 255, 0, 0.1);
+}
+
+.phase-red {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.phase-pirates {
+  background-color: rgba(0, 0, 255, 0.1);
 }

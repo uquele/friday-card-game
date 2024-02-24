@@ -1,15 +1,15 @@
 
-export function cardHazardHTML(card) {
+export function cardHazardHTML(card, phase) {
   return `
-<div class="card-hazard" id="${card.id}">
+<div class="card-hazard ${card.fightingSide ? 'card-as-fighting' : ''}" id="card${card.id}">
   <div class="half">
     <div class="hazard-half">
       <div class="hazard-name">${card.name}</div>
       <div class="free-draw">${card.draw}</div>
       <div class="danger-levels">
-        <div class="danger-red">${card.phaseRed}</div>
-        <div class="danger-yellow">${card.phaseYellow}</div>
-        <div class="danger-green">${card.phaseGreen}</div>
+        <div class="danger-red ${phase === 'red' ? '' : 'inactive'}">${card.phaseRed}</div>
+        <div class="danger-yellow ${phase === 'yellow' ? '' : 'inactive'}">${card.phaseYellow}</div>
+        <div class="danger-green ${phase === 'green' ? '' : 'inactive'}">${card.phaseGreen}</div>
       </div>
     </div>
   </div>

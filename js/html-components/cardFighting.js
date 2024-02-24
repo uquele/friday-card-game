@@ -1,6 +1,6 @@
 export function cardFightingHTML(card) {
   return `
-<div class="card-hazard card-as-fighting card-fighting">
+<div class="card-hazard card-as-fighting card-fighting" id="card${card.id}">
   <div class="half">
     <div class="fighting-half"></div>
   </div>

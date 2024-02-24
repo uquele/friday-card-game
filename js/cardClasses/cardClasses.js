@@ -25,6 +25,8 @@ export class CardHazard {
     this.phaseYellow = +phaseYellow
     this.phaseRed = +phaseRed
     this.draw = +draw
+
+    this.fightingSide = false
   }
 }
 

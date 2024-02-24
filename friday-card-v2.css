@@ -1,0 +1,215 @@
+* {
+  /* border: 1px dashed gray; */
+}
+
+img {
+  object-fit: none;
+  object-position: 0 0;
+  width: 223px;
+  height: 400px;
+}
+
+.card-hazard {
+  --card-scale: 1;
+  --card-width: calc(223px * var(--card-scale));
+  --card-height: calc(var(--card-width) * 1.78);
+  --card-height-half: calc(var(--card-height) / 2);
+  --card-inner-margin: calc(var(--card-width) / 223 * 12);
+  --card-border-radius: calc(var(--card-width) / 223 * 11);
+  --card-border-middle: calc(var(--card-width) / 223 * 9);
+  --card-text-border-radius: calc(var(--card-width) / 223 * 5);
+  --card-free-draw-font-size: calc(var(--card-width) / 223 * 25);
+  --card-item-border-width: calc(var(--card-width) / 223 * 2);
+  --card-danger-font-size: calc(var(--card-width) / 223 * 25);
+  --card-danger-width: calc(var(--card-width) / 223 * 32);
+  --card-lives-width: calc(var(--card-width) / 223 * 40);
+  --card-lives-font-size: calc(var(--card-width) / 223 * 30);
+  --card-power-width: calc(var(--card-width) / 223 * 40);
+  --card-power-height: calc(var(--card-width) / 223 * 55);
+  --card-power-font-size: calc(var(--card-width) / 223 * 45);
+  --card-power-border-radius: calc(var(--card-width) / 223 * 20);
+  --card-font-size: calc(var(--card-width) / 223 * 16);
+
+  --card-color-bg: #fcf5d9;
+  --card-color-hazard-bg: #b2d5d8;
+  --card-color-robinson-bg: #cce3a7;
+  --card-color-border-middle: #917824;
+  --card-color-danger-red: #dc6520;
+  --card-color-danger-yellow: #f3e906;
+  --card-color-danger-green: #4eab37;
+  --card-color-danger-font: #222408;
+  --card-color-danger-border: #3c793b;
+  --card-color-lives-bg: #edcd82;
+  --card-color-lives-font: #61a526;
+}
+
+.card-hazard {
+  rotate: 180deg;
+
+  width: var(--card-width);
+  border: 1px solid black;
+  background-color: var(--card-color-bg);
+
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: var(--card-font-size);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--card-border-radius);
+}
+
+.card-hazard .half {
+  height: var(--card-height-half);
+  display: flex;
+}
+
+.card-hazard .hazard-half,
+.card-hazard .robinson-half {
+  flex-grow: 1;
+  position: relative;
+}
+
+.card-hazard .hazard-half {
+  background-color: var(--card-color-hazard-bg);
+  margin: var(--card-inner-margin) var(--card-inner-margin) 0 var(--card-inner-margin);
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+  border-bottom: var(--card-border-middle) solid var(--card-color-border-middle);
+}
+
+.card-hazard .robinson-half {
+  background-color: var(--card-color-robinson-bg);
+  margin: 0 var(--card-inner-margin) var(--card-inner-margin) var(--card-inner-margin);
+  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+  border-top: var(--card-border-middle) solid var(--card-color-border-middle);
+}
+
+.card-hazard .hazard-name,
+.card-hazard .free-draw,
+.card-hazard .danger-levels,
+.card-hazard .effect-name,
+.card-hazard .lives,
+.card-hazard .power,
+.card-hazard .mood {
+  position: absolute;
+}
+
+.card-hazard .hazard-name,
+.card-hazard .free-draw,
+.card-hazard .danger-red,
+.card-hazard .danger-yellow,
+.card-hazard .danger-green,
+.card-hazard .effect-name,
+.card-hazard .lives,
+.card-hazard .power,
+.card-hazard .mood {
+  display: grid;
+  place-items: center;
+}
+
+/* HAZARD SIDE */
+
+.card-hazard .hazard-name {
+  top: 0;
+  width: 80%;
+  left: 10%;
+  padding: 4% 0;
+  line-height: 1;
+  border-radius: 0 0 var(--card-text-border-radius) var(--card-text-border-radius);
+  background-color: var(--card-color-bg);
+}
+
+.card-hazard .free-draw {
+  left: 5%;
+  bottom: 5%;
+  width: 24%;
+  height: 18%;
+  background-color: var(--card-color-bg);
+  border: var(--card-item-border-width) solid var(--card-color-danger-border);
+  font-size: var(--card-free-draw-font-size);
+}
+
+.card-hazard .danger-levels {
+  right: 2%;
+  bottom: 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-hazard .danger-red,
+.card-hazard .danger-yellow,
+.card-hazard .danger-green {
+  width: var(--card-danger-width);
+  height: var(--card-danger-width);
+  border-radius: 100%;
+  border: var(--card-item-border-width) solid var(--card-color-danger-border);
+  color: var(--card-color-danger-font);
+  font-size: var(--card-danger-font-size);
+  font-weight: bold;
+}
+
+.card-hazard .danger-red {
+  background-color: var(--card-color-danger-red);
+}
+
+.card-hazard .danger-yellow {
+  background-color: var(--card-color-danger-yellow);
+}
+
+.card-hazard .danger-green {
+  background-color: var(--card-color-danger-green);
+}
+
+/* ROBINSON SIDE */
+
+.card-hazard .effect-name,
+.card-hazard .lives,
+.card-hazard .power,
+.card-hazard .mood {
+  rotate: 180deg;
+}
+
+.card-hazard .effect-name {
+  top: 0;
+  width: 70%;
+  left: 15%;
+  padding: 4% 0;
+  line-height: 1;
+  background-color: var(--card-color-bg);
+  border-radius: var(--card-text-border-radius) var(--card-text-border-radius) 0 0;
+}
+
+.card-hazard .lives {
+  bottom: 0;
+  left: 0;
+  width: var(--card-lives-width);
+  height: var(--card-lives-width);
+  border-radius: 100%;
+  background-color: var(--card-color-lives-bg);
+  border: var(--card-item-border-width) solid var(--card-color-danger-border);
+  font-size: var(--card-lives-font-size);
+  font-weight: bold;
+  color: var(--card-color-lives-font);
+}
+
+.card-hazard .power {
+  bottom: 0;
+  right: 0;
+  background-color: var(--card-color-bg);
+  border-radius: 0 0 var(--card-power-border-radius) 0;
+  width: var(--card-power-width);
+  height: var(--card-power-height);
+  font-weight: bold;
+  font-size: var(--card-power-font-size);
+}
+
+.card-hazard .mood {
+  bottom: 0;
+  --card-mood-width: calc(92% - var(--card-lives-width) - var(--card-power-width));
+  width: var(--card-mood-width);
+  left: calc((100% - var(--card-mood-width)) / 2);
+  background-color: var(--card-color-bg);
+  line-height: 1;
+  padding: 2% 0;
+  border-radius: 0 0 var(--card-text-border-radius) var(--card-text-border-radius);
+}

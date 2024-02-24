@@ -1,7 +1,7 @@
 //@ts-check
 
 import { CARDS_TSV } from "../input-data/cardsTSV.js"
-import { parseTSV } from "./utils/parseTSV.js"
+import { parseTSV } from "../utils/parseTSV.js"
 import { CardFighting, CardHazard, CardAging, CardPirates } from "./cardClasses.js"
 
 /**

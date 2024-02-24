@@ -1,6 +1,9 @@
 //@ts-check
 'use strict'
 
+import { cardHazardHTML } from "./card-templates/html-components/cardHazard.js"
+import { cardRobinsonHTML } from "./card-templates/html-components/cardRobinson.js"
+import { deckHTML } from "./card-templates/html-components/deck.js"
 import { createAllCards } from "./js/card-creation/createAllCards.js"
 import { Deck } from "./js/card-creation/deckClass.js"
 
@@ -19,17 +22,17 @@ Object.freeze(CARDS)
 
 // create all decks //
 
-const deckRobinson = new Deck(CARDS.filter(card => card.type === 'fighting'))
+const deckFighting = new Deck(CARDS.filter(card => card.type === 'fighting'))
 const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
 const deckAgingOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Old'))
 const deckAgingVeryOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Very old'))
 const deckPirates = new Deck(CARDS.filter(card => card.type === 'pirates'))
 
-if (CARDS.length !== deckRobinson.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
+if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
 // easy difficulty setup //
 
-deckRobinson.shuffle()
+deckFighting.shuffle()
 
 deckHazard.shuffle()
 
@@ -47,8 +50,8 @@ const deckHazardDiscard = new Deck()
 
 // setup check
 
-console.log('deckRobinson')
-console.log(deckRobinson)
+console.log('deckFighting')
+console.log(deckFighting)
 console.log('deckHazard')
 console.log(deckHazard)
 console.log('deckAging')
@@ -56,7 +59,61 @@ console.log(deckAging)
 console.log('deckPirates')
 console.log(deckPirates)
 
+function $(cssSelector) {
+  return document.querySelector(cssSelector)
+}
 
+// $('#test1').innerHTML = cardHazardHTML(deckHazard.cards[0])
+
+drawDecks()
+function drawDecks() {
+  $('#test3').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
+  $('#test4').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' })
+  $('#test5').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
+}
+
+$('#test3').addEventListener('click', deckClick)
+$('#test4').addEventListener('click', deckClick)
+$('#test5').addEventListener('click', deckClick)
+
+function deckClick(event) {
+  const deckID = findID(event.target)
+  const deck = findDeck(deckID)
+  const drawnCard = deck.drawCard('top')
+  console.log(drawnCard);
+  $('#test1').innerHTML = cardHTML(drawnCard)
+  drawDecks()
+
+  function findID(element) {
+    if (element.id) return element.id
+    return findID(element.parentElement)
+  }
+
+  function findDeck(deckID) {
+    switch (deckID) {
+      case 'hazard':
+        return deckHazard
+      case 'aging':
+        return deckAging
+      case 'fighting':
+        return deckFighting
+      default:
+        throw new TypeError(`Deck with deckID of ${deckID} not found`)
+    }
+  }
+
+  function cardHTML(card) {
+    switch (card.type) {
+      case 'fighting':
+      case 'aging':
+        return cardRobinsonHTML(card)
+      case 'hazard':
+        return cardHazardHTML(card)
+      default:
+        throw new TypeError(`Card type ${card.type} not found`)
+    }
+  }
+}
 
 const currentHazard = []
 const deckLeftSide = []

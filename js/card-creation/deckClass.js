@@ -39,7 +39,7 @@ export class Deck {
         throw new TypeError(`Unexpected location: ${location}`)
     }
   
-    const drawnCard = deck.splice(index, 1);
+    const drawnCard = deck.splice(index, 1)[0];
     return drawnCard;
   
   }

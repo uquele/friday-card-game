@@ -8,6 +8,8 @@ export class CardFighting {
     this.power = +power
     this.skillName = skillName
     this.removeCost = +removeCost
+
+    this.skillUsed = false
   }
 }
 
@@ -27,6 +29,8 @@ export class CardHazard {
     this.draw = +draw
 
     this.fightingSide = false
+    this.skillUsed = false
+    this.additionalDraw = 0
   }
 }
 

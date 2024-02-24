@@ -14,6 +14,7 @@ let difficultyLevel = 1 // not implemented
 let lives = 20
 let livesMax = 22
 let phase = ''
+let livesLostThisFight;
 // const stepOptions = ['choose hazard', 'fighting', 'fight ended']
 // let step = 0
 
@@ -189,7 +190,46 @@ function fightingDeckClick() {
 
   $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
 
+  deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
+  deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
+
   updateEndFightButtonText()
+}
+
+function useCardEffect(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+  const centerCard = deckCenter.cards[0]
+
+  if (card.skillName === '' || card.skillUsed) return
+
+  switch (card.skillName) {
+    case 'Life +2':
+      setLives(Math.min(lives + 2, livesMax))
+      card.skillUsed = true
+      break;
+    case 'Life +1':
+      setLives(Math.min(lives + 1, livesMax))
+      card.skillUsed = true
+      break
+    case 'Draw +1':
+      centerCard.additionalDraw += 1
+      card.skillUsed = true
+      break
+    case 'Draw +2':
+      centerCard.additionalDraw += 2
+      card.skillUsed = true
+      break
+    default:
+      break;
+  }
+
+
+  drawDecks()
+
+  deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
+  deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
 }
 
 function endFightClick() {
@@ -199,6 +239,8 @@ function endFightClick() {
   const won = powerDifference() >= 0
 
   if (won) {
+    removeCardModifications()
+
     const centerCard = deckCenter.drawCard()
     centerCard.fightingSide = true
     deckFightingDiscard.addCard(centerCard)
@@ -209,7 +251,10 @@ function endFightClick() {
     chooseAHazard() // loops
 
   } else {
-    setLives(lives + powerDifference())
+    livesLostThisFight = -powerDifference()
+    setLives(lives - livesLostThisFight)
+
+    updateNextFightButtonText()
 
     deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
     deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
@@ -220,13 +265,23 @@ function endFightClick() {
   }
 }
 
+function removeCardModifications() {
+  deckLeft.cards.forEach(card => card.skillUsed = false)
+  deckRight.cards.forEach(card => card.skillUsed = false)
+  deckRight.cards.forEach(card => card.additionalDraw = 0)
+}
+
 function destroyCardForHealth(event) {
   const cardId = findCardID(event.target)
   const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
 
-  setLives(lives - 1)
-  deck.removeCard(deck.findCardById(cardId))
+  if (card.removeCost > livesLostThisFight) return
 
+  livesLostThisFight -= card.removeCost
+  deck.removeCard(card)
+
+  updateNextFightButtonText()
   drawDecks()
 
   deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
@@ -236,6 +291,8 @@ function destroyCardForHealth(event) {
 function nextFightClick() {
   $('#next-fight').hidden = true
 
+  removeCardModifications()
+
   deckHazardDiscard.addCards(deckCenter.removeAllCards())
   deckFightingDiscard.addCards(deckLeft.removeAllCards())
   deckFightingDiscard.addCards(deckRight.removeAllCards())
@@ -243,6 +300,11 @@ function nextFightClick() {
   chooseAHazard() // loops
 
 }
+
+
+
+
+
 
 
 
@@ -263,12 +325,16 @@ function updateEndFightButtonText() {
   $('#end-fight').innerText = `End fight (${powerDifference()})`
 }
 
+function updateNextFightButtonText() {
+  $('#next-fight').innerText = `Next fight (${livesLostThisFight})`
+}
+
 function powerDifference() {
   return deckLeft.totalPower + deckRight.totalPower - deckCenter.totalObstacle(phase)
 }
 
 function setLives(num) {
-  if (num === 0) {
+  if (num <= 0) {
     $('#game-over').innerText = 'ROBINSON DIED - NO HEALTH LEFT'
   }
   lives = num

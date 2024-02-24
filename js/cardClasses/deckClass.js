@@ -23,7 +23,7 @@ export class Deck {
   }
 
   get totalDraw() {
-    return this.cards.reduce((sum, card) => sum + card.draw, 0)
+    return this.cards.reduce((sum, card) => sum + card.draw + card.additionalDraw, 0)
   }
   
   findCardById(id) {

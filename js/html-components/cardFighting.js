@@ -7,7 +7,7 @@ export function cardFightingHTML(card) {
 
   <div class="half">
     <div class="fighting-half">
-      ${card.skillName ? `<div class="effect-name">${card.skillName}</div>` : ""}
+      ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       <div class="lives">${card.removeCost}</div>
       <div class="power">${card.power}</div>
       <div class="mood">${card.name}</div>

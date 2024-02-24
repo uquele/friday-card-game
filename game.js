@@ -1,11 +1,12 @@
 //@ts-check
 'use strict'
 
-import { cardHazardHTML } from "./card-templates/html-components/cardHazard.js"
-import { cardRobinsonHTML } from "./card-templates/html-components/cardRobinson.js"
-import { deckHTML } from "./card-templates/html-components/deck.js"
+import { cardHazardHTML } from "./js/html-components/cardHazard.js"
+import { cardFightingHTML } from "./js/html-components/cardFighting.js"
+import { deckHTML } from "./js/html-components/deck.js"
 import { createAllCards } from "./js/card-creation/createAllCards.js"
-import { Deck } from "./js/card-creation/deckClass.js"
+import { Deck } from "./js/cardClasses/deckClass.js"
+import { deckDiscardHTML } from "./js/html-components/deckDiscard.js"
 
 
 // INITIAL SETUP //
@@ -45,7 +46,7 @@ while (deckPirates.length > 2) {
   deckPirates.drawCard('random')
 }
 
-const deckRobinsonDiscard = new Deck()
+const deckFightingDiscard = new Deck()
 const deckHazardDiscard = new Deck()
 
 // setup check
@@ -67,21 +68,50 @@ function $(cssSelector) {
 
 drawDecks()
 function drawDecks() {
-  $('#test3').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
-  $('#test4').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' })
-  $('#test5').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
+  $('#grid-deck-hazard').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
+  $('#grid-deck-aging').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' })
+  $('#grid-deck-fighting').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
+  $('#grid-deck-aging-and-fighting-discard').innerHTML = deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
+  $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
+  
+  $('#hazard').addEventListener('click', deckClick)
+  $('#aging').addEventListener('click', deckClick)
+  $('#fighting').addEventListener('click', deckClick)
 }
 
-$('#test3').addEventListener('click', deckClick)
-$('#test4').addEventListener('click', deckClick)
-$('#test5').addEventListener('click', deckClick)
+
+
+
+
+function appendCard(card, cssSelector) {
+  document.querySelector(cssSelector).appendChild(createDivElement(cardHTML(card)))
+
+  function createDivElement(HTMLString) {
+    const div = document.createElement('div')
+    div.innerHTML = HTMLString
+    return div
+  }
+
+  function cardHTML(card) {
+    switch (card.type) {
+      case 'fighting':
+      case 'aging':
+        return cardFightingHTML(card)
+      case 'hazard':
+        return cardHazardHTML(card)
+      default:
+        throw new TypeError(`Card type ${card.type} not found`)
+    }
+  }
+}
 
 function deckClick(event) {
   const deckID = findID(event.target)
   const deck = findDeck(deckID)
   const drawnCard = deck.drawCard('top')
-  console.log(drawnCard);
-  $('#test1').innerHTML = cardHTML(drawnCard)
+  console.log(drawnCard)
+  
+  appendCard(drawnCard, '#play-area')
   drawDecks()
 
   function findID(element) {
@@ -101,19 +131,9 @@ function deckClick(event) {
         throw new TypeError(`Deck with deckID of ${deckID} not found`)
     }
   }
-
-  function cardHTML(card) {
-    switch (card.type) {
-      case 'fighting':
-      case 'aging':
-        return cardRobinsonHTML(card)
-      case 'hazard':
-        return cardHazardHTML(card)
-      default:
-        throw new TypeError(`Card type ${card.type} not found`)
-    }
-  }
 }
+
+
 
 const currentHazard = []
 const deckLeftSide = []

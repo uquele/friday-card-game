@@ -1,12 +1,12 @@
-export function cardRobinsonHTML(card) {
+export function cardFightingHTML(card) {
   return `
-<div class="card-hazard card-as-robinson card-robinson">
+<div class="card-hazard card-as-fighting card-fighting">
   <div class="half">
-    <div class="robinson-half"></div>
+    <div class="fighting-half"></div>
   </div>
 
   <div class="half">
-    <div class="robinson-half">
+    <div class="fighting-half">
       ${card.skillName ? `<div class="effect-name">${card.skillName}</div>` : ""}
       <div class="lives">${card.removeCost}</div>
       <div class="power">${card.power}</div>

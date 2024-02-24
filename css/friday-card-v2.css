@@ -7,7 +7,7 @@ img {
 }
 
 :root {
-  --card-scale: 1;
+  --card-scale: 0.6;
   --card-width: calc(223px * var(--card-scale));
   --card-height: calc(var(--card-width) * 1.78);
   --card-height-half: calc(var(--card-height) / 2);
@@ -29,7 +29,7 @@ img {
 
   --card-color-bg: #fcf5d9;
   --card-color-hazard-bg: #b2d5d8;
-  --card-color-robinson-bg: #cce3a7;
+  --card-color-fighting-bg: #cce3a7;
   --card-color-border-middle: #917824;
   --card-color-danger-red: #dc6520;
   --card-color-danger-yellow: #f3e906;
@@ -48,7 +48,7 @@ img {
   --deck-name-margin-top: calc(var(--card-width) / 223 * 20);
 }
 
-.card-hazard.card-as-robinson {
+.card-hazard.card-as-fighting {
   rotate: 180deg;
 }
 
@@ -71,7 +71,7 @@ img {
 }
 
 .card-hazard .hazard-half,
-.card-hazard .robinson-half {
+.card-hazard .fighting-half {
   flex-grow: 1;
   position: relative;
 }
@@ -83,8 +83,8 @@ img {
   border-bottom: var(--card-border-middle) solid var(--card-color-border-middle);
 }
 
-.card-hazard .robinson-half {
-  background-color: var(--card-color-robinson-bg);
+.card-hazard .fighting-half {
+  background-color: var(--card-color-fighting-bg);
   margin: 0 var(--card-inner-margin) var(--card-inner-margin) var(--card-inner-margin);
   border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
   border-top: var(--card-border-middle) solid var(--card-color-border-middle);
@@ -223,14 +223,14 @@ img {
 
 /* ROBINSON CARD, NO HAZARD PART */
 
-.card-robinson .half:nth-child(1) {
+.card-fighting .half:nth-child(1) {
   rotate: 180deg;
 }
-.card-robinson .robinson-half {
+.card-fighting .fighting-half {
   border: none;
 }
 
-.card-robinson .effect-name {
+.card-fighting .effect-name {
   border-radius: var(--card-text-border-radius);
 }
 

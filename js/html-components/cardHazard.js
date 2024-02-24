@@ -15,7 +15,7 @@ export function cardHazardHTML(card) {
   </div>
 
   <div class="half">
-    <div class="robinson-half">
+    <div class="fighting-half">
       ${card.skillName ? `<div class="effect-name">${card.skillName}</div>` : ""}
       <div class="lives">${card.removeCost}</div>
       <div class="power">${card.power}</div>

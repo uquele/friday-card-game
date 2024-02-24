@@ -1,14 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Friday game</title>
-  <link rel="stylesheet" href="card-templates/friday-card-v2.css">
-  <script src="game.js" type="module" defer></script>
-</head>
-<body>
-  <div id="test1"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friday game</title>
+    <link rel="stylesheet" href="./css/friday-card-v2.css" />
+    <link rel="stylesheet" href="./css/field.css" />
+    <script src="game.js" type="module" defer></script>
+  </head>
+  <body>
+    <div id="field">
+      <div id="grid-deck-hazard">1</div>
+      <div id="grid-deck-aging">2</div>
+      <div id="grid-deck-fighting">3</div>
+      <div id="grid-deck-aging-and-fighting-discard">4</div>
+      <div id="grid-deck-hazard-discard">5</div>
+      <div id="play-area"></div>
+    </div>
+
+    <!-- <div id="test1"></div>
   <div id="test2"></div>
   <div id="test3"></div>
   <div id="test4"></div>
@@ -16,6 +26,6 @@
   <div id="test6"></div>
   <div id="test7"></div>
   <div id="test8"></div>
-  <div id="test9"></div>
-</body>
+  <div id="test9"></div> -->
+  </body>
 </html>

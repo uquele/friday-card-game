@@ -1,8 +1,8 @@
 //@ts-check
 
 import { CARDS_TSV } from "../input-data/cardsTSV.js"
-import { parseTSV } from "../utils/parseTSV.js"
-import { CardFighting, CardHazard, CardAging, CardPirates } from "./cardClasses.js"
+import { parseTSV } from "./parseTSV.js"
+import { CardFighting, CardHazard, CardAging, CardPirates } from "../cardClasses/cardClasses.js"
 
 /**
  * @typedef {CardAging | CardFighting | CardHazard | CardPirates} Card

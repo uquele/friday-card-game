@@ -152,7 +152,7 @@ function fightingDeckClick() {
     deckFighting.addCards(deckFightingDiscard.removeAllCards())
   }
 
-  const freeDraw = deckLeft.length < deckCenter.totalDraw
+  const freeDraw = deckLeft.length < deckCenter.totalDraw && !isEffectStop()
 
   if (freeDraw) {
     deckLeft.addCard(deckFighting.drawCard())
@@ -167,7 +167,7 @@ function fightingDeckClick() {
 function updateInterfaceForFight() {
   drawDecks()
 
-  $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
+  $('#grid-deck-fighting').addEventListener('click', fightingDeckClick) // may fire more than once?
 
   deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
   deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
@@ -190,32 +190,61 @@ function useCardEffect(event) {
     case 'Life +2':
       setLives(Math.min(lives + 2, livesMax))
       card.skillUsed = true
+      updateInterfaceForFight()
       break;
     case 'Life +1':
       setLives(Math.min(lives + 1, livesMax))
       card.skillUsed = true
+      updateInterfaceForFight()
       break
     case 'Draw +1':
       centerCard.additionalDraw += 1
       card.skillUsed = true
+      updateInterfaceForFight()
       break
     case 'Draw +2':
       centerCard.additionalDraw += 2
       card.skillUsed = true
+      updateInterfaceForFight()
       break
     case 'Stage -1':
       effectPhaseMinus1 = true
+      card.skillUsed = true
       updateInterfaceForFight()
+      break
+    case 'Double':
+      const appliedDoubleCards = [...deckLeft.cards, ...deckRight.cards].filter(card => card.effectDouble)
+      const nothingToApplyEffectOn = deckLeft.length + deckRight.length - appliedDoubleCards.length <= 1
+      if (nothingToApplyEffectOn) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+
+        const sameCardThatWasClicked = card.id === cardId
+        const effectDoubleWasAlreadyApplied = appliedDoubleCards.includes(card)
+
+        if (sameCardThatWasClicked || effectDoubleWasAlreadyApplied) return
+        $(`#card${card.id}`).addEventListener('click', applyEffectDoubleClick)
+      });
+
+      $('#end-fight').hidden = true
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose a card to apply 'Double' effect`
+      card.skillUsed = true
       break
     default:
       break;
   }
+}
 
+function applyEffectDoubleClick(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
 
-  drawDecks()
+  card.effectDouble = true
 
-  deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
-  deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
+  updateInterfaceForFight()
 }
 
 function endFightClick() {
@@ -263,9 +292,9 @@ function endFightClick() {
 // after fight
 
 function removeCardModifications() {
-  deckLeft.cards.forEach(card => card.skillUsed = false)
-  deckRight.cards.forEach(card => card.skillUsed = false)
-  deckRight.cards.forEach(card => card.additionalDraw = 0)
+  [...deckLeft.cards, ...deckRight.cards].forEach(card => card.skillUsed = false);
+  deckCenter.cards.forEach(card => card.additionalDraw = 0);
+  [...deckLeft.cards, ...deckRight.cards].forEach(card => card.effectDouble = false);
 
   effectPhaseMinus1 = false
 }
@@ -321,9 +350,14 @@ function drawDecks() {
   $('#grid-deck-fighting').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
   $('#grid-deck-aging-and-fighting-discard').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
   $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
-  $('#deck-left').innerHTML = deckOpenHTML(deckLeft, effectPhaseMinus1 ? getPreviousPhase() : phase)
-  $('#deck-center').innerHTML = deckOpenHTML(deckCenter, effectPhaseMinus1 ? getPreviousPhase() : phase)
-  $('#deck-right').innerHTML = deckOpenHTML(deckRight, effectPhaseMinus1 ? getPreviousPhase() : phase)
+
+  const phaseInFight = effectPhaseMinus1 ? getPreviousPhase() : phase
+  const ignoredMaxPowerCards = getIgnoredMaxPowerCards()
+  const isStop = isEffectStop()
+
+  $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards, isStop })
+  $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
+  $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards, isStop })
 
   // $('#hazard').addEventListener('click', deckClick)
   // $('#fighting').addEventListener('click', deckClick)
@@ -346,24 +380,37 @@ function updateNextFightButtonText() {
 // calculations
 
 function powerDifference() {
-  const agingHighest0CardsLength = [...deckLeft.cards, ...deckRight.cards].filter(card => card.agingEffectName === 'Highest 0').length
-  const maxPowerCards = []
+  const ignoredMaxPowerCards = getIgnoredMaxPowerCards();
 
-  while (maxPowerCards.length < agingHighest0CardsLength) {
+  const totalPower = [...deckLeft.cards, ...deckRight.cards].reduce((sum, card) => {
+    if (ignoredMaxPowerCards.includes(card)) return sum
+    if (card.effectDouble) return sum + card.power * 2
+    return sum + card.power
+  }, 0)
+
+  return totalPower - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
+}
+
+function getIgnoredMaxPowerCards() {
+  const agingHighest0CardsLength = [...deckLeft.cards, ...deckRight.cards].filter(card => card.agingEffectName === 'Highest 0').length
+  const ignoredMaxPowerCards = []
+
+  while (ignoredMaxPowerCards.length < agingHighest0CardsLength) {
     let maxPowerValue = -Infinity
     let maxPowerCard
+
     [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-      if (card.power >= maxPowerValue && !maxPowerCards.includes(card)) {
+      if (ignoredMaxPowerCards.includes(card)) return
+      if (card.power > maxPowerValue || (card.power === maxPowerValue && !card.effectDouble)) {
         maxPowerValue = card.power
         maxPowerCard = card
       }
     })
-    maxPowerCards.push(maxPowerCard)
+
+    ignoredMaxPowerCards.push(maxPowerCard)
   }
 
-  const agingPowerLoss = maxPowerCards.reduce((sum, card) => sum + card.power, 0)
-
-  return deckLeft.totalPower + deckRight.totalPower - agingPowerLoss - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
+  return ignoredMaxPowerCards
 }
 
 function getPreviousPhase() {
@@ -371,6 +418,10 @@ function getPreviousPhase() {
   const previousIndex = Math.max(currentIndex - 1, 1)
   return phases[previousIndex]
 
+}
+
+function isEffectStop() {
+  return !!deckLeft.cards.find(card => card.agingEffectName === 'Stop')
 }
 
 // setters

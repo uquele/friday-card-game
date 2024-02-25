@@ -41,6 +41,9 @@ img {
   --card-color-danger-border: #3c793b;
   --card-color-lives-bg: #edcd82;
   --card-color-lives-font: #61a526;
+  --card-color-power-doubled-font: #2e3cff;
+
+  --card-color-effect-aging: #9e0000;
 
   --deck-color-bg: #254820;
   --deck-color-font: #3e7a36;
@@ -138,6 +141,17 @@ img {
   font-size: var(--card-free-draw-font-size);
 }
 
+.card-hazard .free-draw.crossed::before { /* copy-paste */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, transparent  47%, red  50%, transparent  53%);
+  z-index: 2;
+}
+
 .card-hazard .danger-levels {
   right: 2%;
   bottom: 5%;
@@ -201,10 +215,6 @@ img {
   border-radius: var(--card-text-border-radius) var(--card-text-border-radius) 0 0;
 }
 
-.card-hazard .effect-name.crossed {
-  position: relative;
-}
-
 .card-hazard .effect-name.crossed::before {
   content: '';
   position: absolute;
@@ -239,6 +249,20 @@ img {
   font-weight: bold;
   font-size: var(--card-power-font-size);
 }
+.card-hazard .power.doubled {
+  color: var(--card-color-power-doubled-font);
+}
+ 
+.card-hazard .power.crossed::before { /* copy-paste */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, transparent  47%, red  50%, transparent  53%);
+  z-index: 2;
+}
 
 .card-hazard .mood {
   bottom: 0;
@@ -262,6 +286,10 @@ img {
 
 .card-fighting .effect-name {
   border-radius: var(--card-text-border-radius);
+}
+
+.card-fighting .effect-name.effect-aging {
+  color: var(--card-color-effect-aging);
 }
 
 /* DECK */

@@ -10,6 +10,24 @@ export class CardFighting {
     this.removeCost = +removeCost
 
     this.skillUsed = false
+    this.effectDouble = false
+  }
+}
+
+export class CardAging {
+  constructor({ id, type, name, power, removeCost, agingType, agingEffectName }) {
+    checkForNoUndefinedValues(arguments[0])
+
+    this.id = +id
+    this.type = type
+    this.name = name
+    this.power = +power
+    this.removeCost = +removeCost
+    this.agingType = agingType
+    this.agingEffectName = agingEffectName
+
+    this.skillUsed = false
+    this.effectDouble = false
   }
 }
 
@@ -31,20 +49,7 @@ export class CardHazard {
     this.fightingSide = false
     this.skillUsed = false
     this.additionalDraw = 0
-  }
-}
-
-export class CardAging {
-  constructor({ id, type, name, power, removeCost, agingType, agingEffectName }) {
-    checkForNoUndefinedValues(arguments[0])
-
-    this.id = +id
-    this.type = type
-    this.name = name
-    this.power = +power
-    this.removeCost = +removeCost
-    this.agingType = agingType
-    this.agingEffectName = agingEffectName
+    this.effectDouble = false
   }
 }
 

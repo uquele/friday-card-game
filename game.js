@@ -8,17 +8,17 @@ import { deckDiscardHTML } from "./js/html-components/deckDiscard.js"
 import { deckOpenHTML } from "./js/html-components/deckOpen.js"
 
 
-// INITIAL SETUP //
+//#region - INITIAL SETUP //
 
 let difficultyLevel = 1 // not implemented
 let lives = 20
 let livesMax = 22
-let phase = ''
-let livesLostThisFight;
-// const stepOptions = ['choose hazard', 'fighting', 'fight ended']
-// let step = 0
+const phases = ['', 'green', 'yellow', 'red', 'pirates']
+let phase = phases[0]
+let livesLostThisFight
+let effectPhaseMinus1 = false
 
-// have all cards ready //
+// create all cards //
 
 const CARDS = createAllCards()
 Object.freeze(CARDS)
@@ -30,13 +30,17 @@ const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
 const deckAgingOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Old'))
 const deckAgingVeryOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Very old'))
 const deckPirates = new Deck(CARDS.filter(card => card.type === 'pirates'))
+const deckFightingDiscard = new Deck()
+const deckHazardDiscard = new Deck()
+const deckLeft = new Deck()
+const deckCenter = new Deck()
+const deckRight = new Deck()
 
 if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
 // easy difficulty setup //
 
 deckFighting.shuffle()
-
 deckHazard.shuffle()
 
 deckAgingOld.removeCard(CARDS.find(card => card.name === 'Very stupid'))
@@ -48,50 +52,22 @@ while (deckPirates.length > 2) {
   deckPirates.drawCard('random')
 }
 
-const deckFightingDiscard = new Deck()
-const deckHazardDiscard = new Deck()
-const deckLeft = new Deck()
-const deckCenter = new Deck()
-const deckRight = new Deck()
-
-
-
-
-
-// INTERFACE //
+// interface //
 
 drawDecks()
-function drawDecks() {
-  // setup check
-
-  // console.log('deckFighting')
-  // console.log(deckFighting)
-  // console.log('deckHazard')
-  // console.log(deckHazard)
-  // console.log('deckAging')
-  // console.log(deckAging)
-  // console.log('deckPirates')
-  // console.log(deckPirates)
-
-  $('#grid-deck-hazard').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
-  $('#grid-deck-fighting').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
-  $('#grid-deck-aging-and-fighting-discard').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
-  $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
-  $('#deck-left').innerHTML = deckOpenHTML(deckLeft, phase)
-  $('#deck-center').innerHTML = deckOpenHTML(deckCenter, phase)
-  $('#deck-right').innerHTML = deckOpenHTML(deckRight, phase)
-
-  // $('#hazard').addEventListener('click', deckClick)
-  // $('#fighting').addEventListener('click', deckClick)
-  // $('#aging').addEventListener('click', deckClick)
-}
 
 $('#lives').innerText = lives;
 $('#phase').innerText = phase;
 $('#start-game').hidden = false;
-$('#start-game').addEventListener('click', startGame);
+$('#start-game').addEventListener('click', startGame); // <- game starts here
 $('#help').innerText = '';
 
+//#endregion
+
+
+//#region - ACTIONS //
+
+// before fight
 
 function startGame() {
   $('#start-game').hidden = true;
@@ -145,18 +121,17 @@ function hazardChosenClick(event) {
 
   deckHazardDiscard.addCard(deckCenter.removeCard(cardToRemove))
 
-  fightHazardClick()
+  fightingDeckClick()
 }
 
 function fightHazardClick() {
   $('#fight-hazard').hidden = true
   $("#discard-hazard").hidden = true
-  $('#end-fight').hidden = false
-  
-  $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
-  
+
   fightingDeckClick()
 }
+
+// during fight
 
 function discardHazardClick() {
   $('#fight-hazard').hidden = true
@@ -186,13 +161,20 @@ function fightingDeckClick() {
     deckRight.addCard(deckFighting.drawCard())
   }
 
+  updateInterfaceForFight()
+}
+
+function updateInterfaceForFight() {
   drawDecks()
-
+  
   $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
-
+  
   deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
   deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
+  
+  $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
 
+  $('#end-fight').hidden = false
   updateEndFightButtonText()
 }
 
@@ -220,6 +202,10 @@ function useCardEffect(event) {
     case 'Draw +2':
       centerCard.additionalDraw += 2
       card.skillUsed = true
+      break
+    case 'Stage -1':
+      effectPhaseMinus1 = true
+      updateInterfaceForFight()
       break
     default:
       break;
@@ -261,14 +247,18 @@ function endFightClick() {
 
     $('#next-fight').hidden = false
 
-    $('#help').innerText = `Go to next fight or remove your played fighting cards for 1 or 2 health points (cost is shown on a card)`
+    $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
   }
 }
+
+// after fight
 
 function removeCardModifications() {
   deckLeft.cards.forEach(card => card.skillUsed = false)
   deckRight.cards.forEach(card => card.skillUsed = false)
   deckRight.cards.forEach(card => card.additionalDraw = 0)
+
+  effectPhaseMinus1 = false
 }
 
 function destroyCardForHealth(event) {
@@ -301,24 +291,34 @@ function nextFightClick() {
 
 }
 
+//#endregion
 
 
+//#region - RE-DRAW INTERFACE //
 
+function drawDecks() {
+  // setup check
 
+  // console.log('deckFighting')
+  // console.log(deckFighting)
+  // console.log('deckHazard')
+  // console.log(deckHazard)
+  // console.log('deckAging')
+  // console.log(deckAging)
+  // console.log('deckPirates')
+  // console.log(deckPirates)
 
+  $('#grid-deck-hazard').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
+  $('#grid-deck-fighting').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
+  $('#grid-deck-aging-and-fighting-discard').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
+  $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
+  $('#deck-left').innerHTML = deckOpenHTML(deckLeft, effectPhaseMinus1 ? getPreviousPhase() : phase)
+  $('#deck-center').innerHTML = deckOpenHTML(deckCenter, effectPhaseMinus1 ? getPreviousPhase() : phase)
+  $('#deck-right').innerHTML = deckOpenHTML(deckRight, effectPhaseMinus1 ? getPreviousPhase() : phase)
 
-
-function nextPhase() {
-  const phases = ['', 'green', 'yellow', 'red', 'pirates']
-  const classes = phases.map(phase => `phase-${phase}`)
-  const currentIndex = phases.findIndex(value => value === phase)
-  if (currentIndex === phases.length - 1) throw new Error(`Already on last phase`)
-
-  phase = phases[currentIndex + 1]
-  $('#phase').innerText = phase;
-
-  $('#play-area').classList.remove(classes[currentIndex])
-  $('#play-area').classList.add(classes[currentIndex + 1])
+  // $('#hazard').addEventListener('click', deckClick)
+  // $('#fighting').addEventListener('click', deckClick)
+  // $('#aging').addEventListener('click', deckClick)
 }
 
 function updateEndFightButtonText() {
@@ -329,9 +329,25 @@ function updateNextFightButtonText() {
   $('#next-fight').innerText = `Next fight (${livesLostThisFight})`
 }
 
+//#endregion
+
+
+//#region - HELPERS //
+
+// calculations
+
 function powerDifference() {
-  return deckLeft.totalPower + deckRight.totalPower - deckCenter.totalObstacle(phase)
+  return deckLeft.totalPower + deckRight.totalPower - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
 }
+
+function getPreviousPhase() {
+  const currentIndex = phases.findIndex(value => value === phase)
+  const previousIndex = Math.max(currentIndex - 1, 1)
+  return phases[previousIndex]
+
+}
+
+// setters
 
 function setLives(num) {
   if (num <= 0) {
@@ -341,21 +357,23 @@ function setLives(num) {
   $('#lives').innerText = lives;
 }
 
+function nextPhase() {
+  const currentIndex = phases.findIndex(value => value === phase)
+  if (currentIndex === phases.length - 1) throw new Error(`Already on last phase`)
+
+  phase = phases[currentIndex + 1]
+  $('#phase').innerText = phase;
+
+  const classes = phases.map(phase => `phase-${phase}`)
+  $('#play-area').classList.remove(classes[currentIndex])
+  $('#play-area').classList.add(classes[currentIndex + 1])
+}
+
+// element search
+
 function $(cssSelector) {
   return document.querySelector(cssSelector)
 }
-
-function appendCard(card, cssSelector) {
-  $(cssSelector).appendChild(createDivElement(cardHTML(card)))
-}
-
-function createDivElement(HTMLString) {
-  const div = document.createElement('div')
-  div.innerHTML = HTMLString
-  return div
-}
-
-
 
 function findID(element) {
   if (element.id) return element.id
@@ -384,6 +402,9 @@ function findDeck(element) {
       throw new Error(`Deck with name ${deckName} not found`)
   }
 }
+
+//#endregion
+
 
 // switch (difficultyLevel) {
 //   case 1:

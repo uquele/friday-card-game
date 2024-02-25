@@ -39,7 +39,7 @@ export class CardHazard {
     this.type = type
     this.name = name
     this.power = +power
-    this.skillName = skillName
+    this._skillName = skillName
     this.removeCost = +removeCost
     this.phaseGreen = +phaseGreen
     this.phaseYellow = +phaseYellow
@@ -50,6 +50,15 @@ export class CardHazard {
     this.skillUsed = false
     this.additionalDraw = 0
     this.effectDouble = false
+    this.copiedSkillName = undefined
+  }
+
+  get skillName() {
+    return this.copiedSkillName || this._skillName
+  }
+
+  set skillName(name) {
+    this._skillName = name
   }
 }
 

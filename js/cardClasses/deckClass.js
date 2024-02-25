@@ -25,12 +25,16 @@ export class Deck {
   get totalDraw() {
     return this.cards.reduce((sum, card) => sum + card.draw + card.additionalDraw, 0)
   }
-  
+
   findCardById(id) {
     id = +id
     const card = this.cards.find(card => card.id === id)
     if (!card) throw new Error(`Card with id ${id} not found`)
     return card
+  }
+
+  findIndex(card) {
+    return this.cards.findIndex(c => c === card)
   }
 
   shuffle() {
@@ -43,7 +47,7 @@ export class Deck {
 
   /**
    * Removes a card from the deck from the specified location
-   * @param {'top' | 'bottom' | 'random'} location 
+   * @param {'top' | 'bottom' | 'random' | 'random-except-top'} location 
    * @returns {Card} drawn card
    */
   drawCard(location = 'top') {
@@ -62,22 +66,32 @@ export class Deck {
       case 'random':
         index = randomInt(0, deck.length - 1)
         break
+      case 'random-except-top':
+        if (deck.length === 1) index = 0
+        index = randomInt(0, deck.length - 2)
+        break
       default:
         throw new TypeError(`Unexpected location: ${location}`)
     }
-  
+
     const drawnCard = deck.splice(index, 1)[0];
     return drawnCard;
-  
+
   }
 
   /**
    * 
    * @param {Card} card 
-   * @param {'top' | 'bottom' | 'random'} location 
+   * @param {'top' | 'bottom' | 'random' | number} location 
    */
   addCard(card, location = 'top') {
     const deck = this.cards
+
+    if (Number.isInteger(location)) {
+      const index = location
+      deck.splice(index, 0, card)
+      return
+    }
 
     switch (location) {
       case 'top':

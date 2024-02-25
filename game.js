@@ -142,15 +142,7 @@ function discardHazardClick() {
 }
 
 function fightingDeckClick() {
-
-  if (deckFighting.length === 0) {
-    if (deckAging.length === 0) {
-      $('#game-over').innerText = 'ROBINSON DIED FROM OLD AGE'
-    }
-    deckFightingDiscard.addCard(deckAging.drawCard())
-    deckFightingDiscard.shuffle()
-    deckFighting.addCards(deckFightingDiscard.removeAllCards())
-  }
+  if (deckFighting.length === 0) fightingDeckRestock()
 
   const freeDraw = deckLeft.length < deckCenter.totalDraw && !isEffectStop()
 
@@ -162,6 +154,16 @@ function fightingDeckClick() {
   }
 
   updateInterfaceForFight()
+}
+
+function fightingDeckRestock() {
+  if (deckAging.length === 0) {
+    $('#game-over').innerText = 'ROBINSON DIED FROM OLD AGE'
+  }
+  deckFightingDiscard.addCard(deckAging.drawCard())
+  deckFightingDiscard.shuffle()
+  deckFighting.addCards(deckFightingDiscard.removeAllCards())
+
 }
 
 function updateInterfaceForFight() {
@@ -230,12 +232,95 @@ function useCardEffect(event) {
       $('#end-fight').hidden = true
       $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
       $('#help').innerText = `Choose a card to apply 'Double' effect`
+
       card.skillUsed = true
+      break
+    case 'Exchange 1':
+      if (deckFightingDiscard.length === 0) return
+      if (deckLeft.length + deckRight.length <= 1) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+
+        if (card.id === cardId) return
+        $(`#card${card.id}`).addEventListener('click', applyEffectExchange)
+      })
+
+      $('#end-fight').hidden = true;
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose a card to exchange with discard pile`;
+
+      card.skillUsed = true
+      break;
+    case 'Exchange 2':
+      if (deckFightingDiscard.length === 0) return
+      if (deckLeft.length + deckRight.length <= 1) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+
+        if (card.id === cardId) return
+        $(`#card${card.id}`).addEventListener('click', applyEffectExchange1)
+      })
+
+      $('#end-fight').hidden = true;
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose the 1st card to exchange with discard pile`;
+
+      card.skillUsed = true
+      break;
+    case 'Put under pile':
+      if (deckLeft.length + deckRight.length <= 1) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+
+        if (card.id === cardId) return
+        $(`#card${card.id}`).addEventListener('click', applyEffectPutUnderPile)
+      })
+
+      $('#end-fight').hidden = true;
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose a card to put under the fighting deck`;
+
+      card.skillUsed = true
+      break
+    case 'Destroy':
+      if (deckLeft.length + deckRight.length <= 1) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+
+        if (card.id === cardId) return
+        $(`#card${card.id}`).addEventListener('click', applyEffectDestroy)
+      })
+
+      $('#end-fight').hidden = true;
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose a card to destroy`;
+
+      card.skillUsed = true
+      break
+    case 'Copy':
+      const cardsWithSkill = [...deckLeft.cards, ...deckRight.cards].filter(card => card.skillName).length
+      if (cardsWithSkill <= 1) return
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(_card => {
+        $(`#card${_card.id}`).removeEventListener('click', useCardEffect)
+
+        if (_card.id === cardId || !_card.skillName) return
+        $(`#card${_card.id}`).addEventListener('click', (event) => applyEffectCopy(event, card))
+      })
+
+      $('#end-fight').hidden = true;
+      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
+      $('#help').innerText = `Choose a card to copy it's effect`;
       break
     default:
       break;
   }
 }
+
 
 function applyEffectDoubleClick(event) {
   const cardId = findCardID(event.target)
@@ -243,6 +328,94 @@ function applyEffectDoubleClick(event) {
   const card = deck.findCardById(cardId)
 
   card.effectDouble = true
+
+  updateInterfaceForFight()
+}
+
+function applyEffectExchange(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  removeCardModifications(card)
+
+  deck.addCard(deckFightingDiscard.drawCard('random'), deck.findIndex(card))
+  deckFightingDiscard.addCard(deck.removeCard(card), 'top')
+
+  updateInterfaceForFight()
+}
+
+function applyEffectExchange1(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  removeCardModifications(card)
+
+  deck.addCard(deckFightingDiscard.drawCard('random'), deck.findIndex(card))
+  deckFightingDiscard.addCard(deck.removeCard(card), 'top')
+
+  drawDecks();
+
+  [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+    if (card.id === cardId) return
+    $(`#card${card.id}`).addEventListener('click', applyEffectExchange2)
+  })
+
+  $('#help').innerText = `Choose the 2nd card to exchange with discard pile or click 'Stop exchanging'`;
+  $('#stop-exchanging').hidden = false
+  $('#stop-exchanging').addEventListener('click', stopExchangingClick)
+}
+
+function applyEffectExchange2(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  removeCardModifications(card)
+
+  deck.addCard(deckFightingDiscard.drawCard('random-except-top'), deck.findIndex(card))
+  deckFightingDiscard.addCard(deck.removeCard(card), 'top')
+
+  stopExchangingClick()
+}
+
+function stopExchangingClick() {
+  $('#stop-exchanging').hidden = true
+  updateInterfaceForFight()
+}
+
+function applyEffectPutUnderPile(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  removeCardModifications(card)
+
+  if (deckFighting.length === 0) fightingDeckRestock()
+
+  deckFighting.addCard(deck.removeCard(card), 'bottom')
+
+  updateInterfaceForFight()
+}
+
+function applyEffectDestroy(event) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  if (deckLeft.cards.find(c => c === card)) deckCenter.cards[0].additionalDraw -= 1
+  deck.removeCard(card)
+
+  updateInterfaceForFight()
+}
+
+function applyEffectCopy(event, cardSender) {
+  const cardId = findCardID(event.target)
+  const deck = findDeck(event.target)
+  const card = deck.findCardById(cardId)
+
+  cardSender.copiedSkillName = card.skillName
 
   updateInterfaceForFight()
 }
@@ -264,7 +437,7 @@ function endFightClick() {
   const won = livesLostThisFight === 0
 
   if (won) {
-    removeCardModifications()
+    removeAllModifications()
 
     const centerCard = deckCenter.drawCard()
     centerCard.fightingSide = true
@@ -291,11 +464,15 @@ function endFightClick() {
 
 // after fight
 
-function removeCardModifications() {
-  [...deckLeft.cards, ...deckRight.cards].forEach(card => card.skillUsed = false);
-  deckCenter.cards.forEach(card => card.additionalDraw = 0);
-  [...deckLeft.cards, ...deckRight.cards].forEach(card => card.effectDouble = false);
+function removeCardModifications(card) {
+  card.skillUsed = false
+  card.additionalDraw = 0
+  card.effectDouble = false
+  card.copiedSkillName = undefined
+}
 
+function removeAllModifications() {
+  [...deckLeft.cards, ...deckRight.cards, ...deckCenter.cards].forEach(card => removeCardModifications(card));
   effectPhaseMinus1 = false
 }
 
@@ -319,7 +496,7 @@ function destroyCardForHealth(event) {
 function nextFightClick() {
   $('#next-fight').hidden = true
 
-  removeCardModifications()
+  removeAllModifications()
 
   deckHazardDiscard.addCards(deckCenter.removeAllCards())
   deckFightingDiscard.addCards(deckLeft.removeAllCards())
@@ -355,9 +532,9 @@ function drawDecks() {
   const ignoredMaxPowerCards = getIgnoredMaxPowerCards()
   const isStop = isEffectStop()
 
-  $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards, isStop })
+  $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards })
   $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
-  $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards, isStop })
+  $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
 
   // $('#hazard').addEventListener('click', deckClick)
   // $('#fighting').addEventListener('click', deckClick)

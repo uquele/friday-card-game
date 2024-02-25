@@ -1,6 +1,6 @@
 import { cardHTML } from "./card.js"
 
-export function deckOpenHTML({ deck, phaseInFight, ignoredMaxPowerCards, isStop }) {
+export function deckOpenHTML({ deck, phaseInFight, ignoredMaxPowerCards, isStop = false }) {
   // let html = ''
 
   // for (const card of deck.cards) {

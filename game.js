@@ -166,12 +166,12 @@ function fightingDeckClick() {
 
 function updateInterfaceForFight() {
   drawDecks()
-  
+
   $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
-  
+
   deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
   deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
-  
+
   $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
 
   $('#end-fight').hidden = false
@@ -222,7 +222,17 @@ function endFightClick() {
   $('#end-fight').hidden = true
   $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
 
-  const won = powerDifference() >= 0
+  livesLostThisFight = Math.max(-powerDifference(), 0)
+  setLives(lives - livesLostThisFight)
+
+  let agingCardLifeLoss = 0;
+  agingCardLifeLoss += deckLeft.cards.filter(card => card.agingEffectName === 'Life -1').length
+  agingCardLifeLoss += deckLeft.cards.filter(card => card.agingEffectName === 'Life -2').length * 2
+  agingCardLifeLoss += deckRight.cards.filter(card => card.agingEffectName === 'Life -1').length
+  agingCardLifeLoss += deckRight.cards.filter(card => card.agingEffectName === 'Life -2').length * 2
+  setLives(lives - agingCardLifeLoss)
+
+  const won = livesLostThisFight === 0
 
   if (won) {
     removeCardModifications()
@@ -237,9 +247,6 @@ function endFightClick() {
     chooseAHazard() // loops
 
   } else {
-    livesLostThisFight = -powerDifference()
-    setLives(lives - livesLostThisFight)
-
     updateNextFightButtonText()
 
     deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
@@ -249,6 +256,8 @@ function endFightClick() {
 
     $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
   }
+
+
 }
 
 // after fight
@@ -337,7 +346,24 @@ function updateNextFightButtonText() {
 // calculations
 
 function powerDifference() {
-  return deckLeft.totalPower + deckRight.totalPower - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
+  const agingHighest0CardsLength = [...deckLeft.cards, ...deckRight.cards].filter(card => card.agingEffectName === 'Highest 0').length
+  const maxPowerCards = []
+
+  while (maxPowerCards.length < agingHighest0CardsLength) {
+    let maxPowerValue = -Infinity
+    let maxPowerCard
+    [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+      if (card.power >= maxPowerValue && !maxPowerCards.includes(card)) {
+        maxPowerValue = card.power
+        maxPowerCard = card
+      }
+    })
+    maxPowerCards.push(maxPowerCard)
+  }
+
+  const agingPowerLoss = maxPowerCards.reduce((sum, card) => sum + card.power, 0)
+
+  return deckLeft.totalPower + deckRight.totalPower - agingPowerLoss - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
 }
 
 function getPreviousPhase() {

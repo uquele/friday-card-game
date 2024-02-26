@@ -172,6 +172,9 @@ const UI = {
 
   updateEndFightButtonText() {
     $('#end-fight').innerText = `End fight (${fight.powerDifference})`
+    fight.powerDifference >= 0
+      ? $('#end-fight').classList.add('fight-won')
+      : $('#end-fight').classList.remove('fight-won')
   },
 
   updateNextFightButtonText() {
@@ -308,7 +311,7 @@ UI.drawDecks()
 UI.updateLives()
 UI.updatePhase()
 $('#start-game').hidden = false
-$('#help').innerText = ''
+$('#help').innerText = 'Help Robinson survive the hazards and 2 pirate ships!'
 
 // set button events
 $('#start-game').addEventListener('click', startGame); // <- game starts here

@@ -7,7 +7,7 @@ img {
 }
 
 :root {
-  --card-scale: 0.8;
+  --card-scale: 0.7;
   --card-width: calc(223px * var(--card-scale));
   --card-height: calc(var(--card-width) * 1.78);
   --card-height-half: calc(var(--card-height) / 2);
@@ -40,7 +40,8 @@ img {
   --card-color-danger-font: #222408;
   --card-color-danger-border: #3c793b;
   --card-color-lives-bg: #edcd82;
-  --card-color-lives-font: #61a526;
+  --card-color-lives-bg-2: #add3d6;
+  --card-color-lives-font: #528a21;
   --card-color-power-doubled-font: #2e3cff;
 
   --card-color-effect-aging: #9e0000;
@@ -245,6 +246,10 @@ img {
   font-size: var(--card-lives-font-size);
   font-weight: bold;
   color: var(--card-color-lives-font);
+}
+
+.card-hazard .lives.two {
+  background-color: var(--card-color-lives-bg-2);
 }
 
 .card-hazard .power {

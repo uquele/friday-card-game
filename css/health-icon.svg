@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="12"
+   height="31"
+   viewBox="0 0 12 31"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   sodipodi:docname="health-icon.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showguides="true"
+     inkscape:zoom="26.237014"
+     inkscape:cx="28.299714"
+     inkscape:cy="3.5636677"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="10.054235,-31.738425"
+       orientation="1,0"
+       id="guide2"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill-opacity:1;stroke:#026d00;stroke-width:0.382457;stroke-dasharray:none;stroke-opacity:1;fill:#61a526"
+       d="m 4.537064,27.892238 h 2.9028284 v -2.329952 c 0,0 3.3924756,-1.727107 3.3687176,-2.668851 C 10.7738,21.514017 10.81081,9.0846759 10.84445,4.3385565 10.851931,3.2632616 10.705241,3.4150443 10.24094,3.4160774 9.0141513,3.4188258 7.6840478,7.0618877 5.9540151,6.9879366 4.174526,6.9118716 2.8337881,3.3983165 1.7865645,3.4208697 1.2941205,3.4314323 1.1612195,3.170768 1.1442138,4.2162895 1.0833299,7.9595966 1.1083683,16.63946 1.1083683,23.020521 c 0,1.098397 3.4857913,2.503486 3.4857913,2.503486 z"
+       id="path1"
+       sodipodi:nodetypes="cccssssssscc" />
+  </g>
+</svg>

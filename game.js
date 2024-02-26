@@ -3,7 +3,7 @@
 import { createAllCards } from "./js/card-creation/createAllCards.js"
 import { Card } from "./js/classes/card.js"
 import { Deck } from "./js/classes/deck.js"
-import { deckClosedHTML, deckDiscardHTML, deckOpenHTML } from "./js/html-components/deckHTML.js"
+import { deckClosedHTML, deckDiscardHTML, deckOpenHTML, healthIconHTML } from "./js/html-components/deckHTML.js"
 
 function $(cssSelector) {
   return document.querySelector(cssSelector)
@@ -188,8 +188,15 @@ const UI = {
   },
 
   updateLives() {
-    const slashes = game.lives >= 0 ? '/'.repeat(game.lives) : ''
-    $('#lives').innerText = `${slashes}\n${game.lives}`;
+    const healthIconHTMLs = game.lives >= 0 ? healthIconHTML.repeat(game.lives) : ''
+    $('#health-icons').innerHTML = healthIconHTMLs
+    $('#lives-amount').innerText = game.lives;
+    
+    if (game.lives === 0) {
+      $('#lives-amount').classList.add('very-low')
+    } else {
+      $('#lives-amount').classList.remove('very-low')
+    }
     if (game.lives < 0) $('#game-over').innerText = 'ROBINSON DIED DUE TO LOW HEALTH'
   },
 

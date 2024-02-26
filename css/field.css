@@ -76,15 +76,43 @@ html {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-#lives,
-#phase {
-  text-align: right;
-  padding: 0 20px;
-}
-
 #lives {
+  text-align: right;
   font-size: 45px;
   font-weight: bold;
+  
+  display: flex;
+  justify-content: end;
+  align-content: center;
+}
+
+#health-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px
+}
+
+#health-icons img {
+  height: 45px;
+  rotate: 13deg;
+}
+
+#lives-amount {
+  padding: 0 20px 0 10px;
+  width: 80px;
+}
+
+#lives-amount.very-low {
+  animation: 0.3s ease-out 0s infinite alternate blink;
+}
+
+@keyframes blink {
+  from {
+    color: black
+  }
+  to {
+    color: rgb(204, 0, 0)
+  }  
 }
 
 #game-over,

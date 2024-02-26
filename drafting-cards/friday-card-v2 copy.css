@@ -220,6 +220,9 @@ img.hazard {
   font-size: var(--card-lives-font-size);
   font-weight: bold;
   color: var(--card-color-lives-font);
+
+  display: flex;
+  justify-content: center;
 }
 
 .card-hazard .power {

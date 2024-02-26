@@ -44,7 +44,7 @@ function cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
 
 function cardPirateHTML({ card }) {
   return `
-    <div class="card-pirate">
+    <div class="card-pirate" id="card${card.id}">
       <div class="inner">
         <div class="inner-top">
           <div class="card-name">${card.name}</div>

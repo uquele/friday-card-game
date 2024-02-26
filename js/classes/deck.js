@@ -29,7 +29,13 @@ export class Deck {
       ['red', 'phaseRed'],
     ])
     const phaseColor = phaseMap.get(phase)
-    return this.cards.reduce((sum, card) => sum + card[phaseColor], 0)
+
+    const total = this.cards.reduce((sum, card) => {
+      if (card.type === 'pirates') return sum + card.power
+      return sum + card[phaseColor]
+    }, 0)
+
+    return total
   }
 
   findCardById(id) {

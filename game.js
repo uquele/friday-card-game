@@ -14,7 +14,7 @@ const game = {
   _lives: 20,
   livesMax: 22,
   phases: ['', 'green', 'yellow', 'red', 'pirates'],
-  phaseIndex: 0,
+  phaseIndex: 0, // 0
 
   // effectPhaseMinus1: false,
 
@@ -49,7 +49,7 @@ const fight = {
   get phaseIndex() {
     const index = game.phaseIndex + this.phaseIndexAdditional
     const min = 1
-    const max = game.phases.length - 1
+    const max = 3
     return Math.min(Math.max(index, min), max)
   },
 
@@ -133,18 +133,18 @@ const UI = {
     $('#grid-deck-vision-and-fighting').innerHTML = '<div id="deck-vision"></div>' + deckClosedHTML(deckFighting, { displayName: 'Fighting', id: 'deck-fighting' })
     $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'deck-aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'deck-fighting-discard' })
     $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'deck-hazard-discard' })
-    
+
     $('#grid-deck-pirates').innerHTML = deckOpenHTML({ deck: deckPirates })
     $('#deck-vision').innerHTML = deckOpenHTML({ deck: deckVision, phaseInFight: game.phase, ignoredMaxPowerCards: [] })
 
     const phaseInFight = fight.phase
     const ignoredMaxPowerCards = fight.ignoredMaxPowerCards
     const isStop = fight.isEffectStop
-    
+
     $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards })
     $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
     $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
-    
+
   },
 
   updateInterfaceForFight() {
@@ -179,7 +179,8 @@ const UI = {
   },
 
   updateLives() {
-    $('#lives').innerText = game.lives;
+    const slashes = game.lives >= 0 ? '/'.repeat(game.lives) : ''
+    $('#lives').innerText = `${slashes}\n${game.lives}`;
     if (game.lives <= 0) $('#game-over').innerText = 'ROBINSON DIED - NO HEALTH LEFT'
   },
 
@@ -267,6 +268,10 @@ Object.freeze(CARDS)
 
 const deckFighting = new Deck(CARDS.filter(card => card.type === 'fighting'))
 const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
+
+// for (let i = 0; i < 28; i++) {
+//   deckHazard.drawCard()
+// }
 const deckAgingOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Old'))
 const deckAgingVeryOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Very old'))
 const deckPirates = new Deck(CARDS.filter(card => card.type === 'pirates'))
@@ -277,7 +282,7 @@ const deckCenter = new Deck()
 const deckRight = new Deck()
 const deckVision = new Deck()
 
-if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
+// if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
 //#endregion
 
@@ -329,10 +334,29 @@ function startGame() {
 // before fight
 
 function chooseAHazard() {
+  if (game.phase === 'pirates') {
+    if (deckPirates.length >= 2) {
+      chooseAPirate()
+      return
+    }
+    if (deckPirates.length === 1) {
+      fightLastPirate()
+      return
+    }
+    if (deckPirates.length === 0) {
+      $('#game-over').innerText = 'ROBINSON SURVIVED! WELL DONE'
+      UI.drawDecks()
+      UI.removeAllEvents()
+      return
+    }
+  }
+
   if (deckHazard.length === 0) {
     deckHazardDiscard.shuffle()
     deckHazard.addCards(deckHazardDiscard.removeAllCards())
     game.nextPhase()
+    chooseAHazard()
+    return
   }
 
   if (deckHazard.length === 1) {
@@ -356,6 +380,31 @@ function chooseAHazard() {
   UI.removeAllEvents()
   UI.addCardEvent(card1, hazardChosenClick)
   UI.addCardEvent(card2, hazardChosenClick)
+}
+
+function chooseAPirate() {
+  deckCenter.addCards(deckPirates.removeAllCards())
+
+  $('#help').innerText = `Choose which pirate you would like to fight first`
+  UI.drawDecks()
+  UI.removeAllEvents()
+  deckCenter.cards.forEach(card => UI.addCardEvent(card, pirateChosenClick))
+}
+
+function pirateChosenClick(event) {
+  const cardId = UI.findCardId(event.target)
+  const index = deckCenter.cards.findIndex(card => card.id === cardId)
+  const removeIndex = index === 0 ? 1 : 0
+  const cardToRemove = deckCenter.cards[removeIndex]
+
+  deckPirates.addCard(deckCenter.removeCard(cardToRemove))
+
+  fightingDeckClick()
+}
+
+function fightLastPirate() {
+  deckCenter.addCard(deckPirates.drawCard())
+  fightingDeckClick()
 }
 
 function hazardChosenClick(event) {
@@ -544,7 +593,7 @@ function useCardEffectClick(event) {
       if (deckFighting.length === 0) return
 
       cardClicked.skillUsed = true
-      
+
       $('#help').innerText = `You can take up to 3 cards from the Fighting pile`;
 
       UI.hideAllButtons()
@@ -584,10 +633,10 @@ function applyEffectVisionMakeChoice() {
   if (deckVision.length === 0) {
     UI.updateInterfaceForFight()
     return
-  } 
+  }
 
   $('#help').innerText = 'Choose whether you want to discard 1 card or not'
-  
+
   UI.hideAllButtons()
   $('#vision-discard-a-card').hidden = false
   $('#vision-discard-no-cards').hidden = false
@@ -609,7 +658,7 @@ function applyEffectVisionDiscard(event) {
   const [card, deck] = UI.findCardAndDeck(event.target)
 
   deckFightingDiscard.addCard(deckVision.removeCard(card))
-  
+
   visionDiscardNoCardsClick()
 }
 
@@ -617,7 +666,7 @@ function visionDiscardNoCardsClick() {
   if (deckVision.length === 0) {
     UI.updateInterfaceForFight()
     return
-  } 
+  }
 
   $('#help').innerText = 'Put the remaining cards back to the Fighting deck in the order of your choice'
 
@@ -733,10 +782,12 @@ function endFightClick() {
   if (won) {
     fight.removeAllModifications()
 
-    const centerCard = deckCenter.drawCard()
-    centerCard.fightingSide = true
+    deckCenter.cards.forEach(card => {
+      if (card.type === 'pirates') deckCenter.removeCard(card)
+      card.fightingSide = true
+    })
 
-    deckFightingDiscard.addCard(centerCard)
+    deckFightingDiscard.addCards(deckCenter.removeAllCards())
     deckFightingDiscard.addCards(deckLeft.removeAllCards())
     deckFightingDiscard.addCards(deckRight.removeAllCards())
 
@@ -745,12 +796,13 @@ function endFightClick() {
     chooseAHazard() // loops
 
   } else {
+    if (game.phase === 'pirates') $('#game-over').innerText = 'ROBINSON DIED TO PIRATES'
     $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
-    
+
     UI.hideAllButtons()
     $('#next-fight').hidden = false
     UI.updateNextFightButtonText()
-    
+
     UI.removeAllEvents()
     fight.allCards.forEach(card => UI.addCardEvent(card, destroyCardForHealth))
   }

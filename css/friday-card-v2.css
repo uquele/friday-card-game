@@ -52,6 +52,14 @@ img {
   --deck-cards-in-deck-font-size: calc(var(--card-width) / 223 * 150);
   --deck-name-font-size: calc(var(--card-width) / 223 * 40);
   --deck-name-margin-top: calc(var(--card-width) / 223 * 20);
+
+  --card-color-pirate-effect-name-bg: #e8d57d;
+  --card-color-pirate-danger-bg: #e3600b;
+  --card-color-pirate-danger-border: #513527;
+  --card-pirate-free-draw-font-size: calc(var(--card-free-draw-font-size) * 1.1);
+  --card-pirate-danger-font-size: calc(var(--card-free-draw-font-size) * 1.5);
+
+
 }
 
 .card-hazard.card-as-fighting {
@@ -339,4 +347,99 @@ img {
 
 .deck-discard .deck-name-discard {
   margin-top: calc(var(--deck-name-margin-top) + var(--deck-name-font-size))
+}
+
+/* PIRATES */
+
+.card-pirate {
+  width: var(--card-height);
+  height: var(--card-width);
+  border: 1px solid black;
+  background-color: var(--card-color-bg);
+  
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: var(--card-font-size);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--card-border-radius);
+
+  display: flex;
+}
+
+.card-pirate .inner {
+  flex-grow: 1;
+  margin: var(--card-inner-margin);
+}
+
+.card-pirate .inner-top {
+  height: 75%;
+  background-color: var(--card-color-hazard-bg);
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+
+  position: relative;
+}
+
+.card-pirate .inner-bottom {
+  height: 25%;
+  background-color: var(--card-color-pirate-effect-name-bg);
+  border-radius: 0 0 var(--card-border-radius) var(--card-border-radius);
+
+  display: grid;
+  place-items: center;
+}
+
+.card-pirate .card-name {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  top: 0;
+  left: 20%;
+  width: 60%;
+  padding: 0.5ch 0;
+  line-height: 1;
+  background-color: var(--card-color-bg);
+  border-radius: 0 0 var(--card-text-border-radius) var(--card-text-border-radius);
+}
+
+.card-pirate .free-draw {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  left: 1%;
+  top: 5%;
+  width: 13%;
+  height: 35%;
+  background-color: var(--card-color-bg);
+  border: var(--card-item-border-width) solid var(--card-color-danger-border);
+  font-size: var(--card-pirate-free-draw-font-size);
+}
+
+.card-pirate .free-draw.crossed::before { /* copy-paste */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom right, transparent  47%, red  50%, transparent  53%);
+  z-index: 2;
+}
+
+.card-pirate .danger {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  top: 25%;
+  right: 6%;
+  width: 17%;
+  height: 45%;
+  background-color: var(--card-color-pirate-danger-bg);
+  border: var(--card-item-border-width) solid var(--card-color-pirate-danger-border);
+  font-size: var(--card-pirate-danger-font-size);
+}
+
+.card-pirate .pirate-effect-name {
+  width: 80%;
+  text-align: center;
 }

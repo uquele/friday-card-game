@@ -1,4 +1,4 @@
-function cardFightingHTML({ card, ignoredMaxPowerCards}) {
+function cardFightingHTML({ card, ignoredMaxPowerCards }) {
   return `
 <div class="card-hazard card-as-fighting card-fighting" id="card${card.id}">
   <div class="half">
@@ -42,6 +42,23 @@ function cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
 </div>`
 }
 
+function cardPirateHTML({ card }) {
+  return `
+    <div class="card-pirate">
+      <div class="inner">
+        <div class="inner-top">
+          <div class="card-name">${card.name}</div>
+          <div class="free-draw">${card.draw}</div>
+          <div class="danger">${card.power}</div>
+        </div>
+        <div class="inner-bottom">
+          <div class="pirate-effect-name">${card.pirateEffectName}</div>
+        </div>
+      </div>
+    </div>
+  `
+}
+
 function cardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
   switch (card.type) {
     case 'fighting':
@@ -49,6 +66,8 @@ function cardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
       return cardFightingHTML({ card, ignoredMaxPowerCards })
     case 'hazard':
       return cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop })
+    case 'pirates':
+      return cardPirateHTML({ card })
     default:
       throw new TypeError(`Card type ${card.type} not found`)
   }
@@ -58,7 +77,7 @@ export function deckOpenHTML({ deck, phaseInFight = '', ignoredMaxPowerCards = [
   return deck.cards.reduce((html, card) => html + cardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }), "")
 }
 
-export function deckClosedHTML(deck, {displayName, id}) {
+export function deckClosedHTML(deck, { displayName, id }) {
   return `
 <div class="deck" id="${id}">
   <div class="deck-name">${displayName}</div>
@@ -66,7 +85,7 @@ export function deckClosedHTML(deck, {displayName, id}) {
 </div>`
 }
 
-export function deckDiscardHTML(deck, {displayName, id}) {
+export function deckDiscardHTML(deck, { displayName, id }) {
   return `
   <div class="deck deck-discard" id="${id}">
     <div class="deck-name">${displayName}</div>
@@ -74,3 +93,4 @@ export function deckDiscardHTML(deck, {displayName, id}) {
     <div class="cards-in-deck">${deck.length}</div>        
   </div>`
 }
+

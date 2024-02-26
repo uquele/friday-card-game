@@ -133,6 +133,9 @@ const UI = {
     $('#grid-deck-vision-and-fighting').innerHTML = '<div id="deck-vision"></div>' + deckClosedHTML(deckFighting, { displayName: 'Fighting', id: 'deck-fighting' })
     $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'deck-aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'deck-fighting-discard' })
     $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'deck-hazard-discard' })
+    
+    $('#grid-deck-pirates').innerHTML = deckOpenHTML({ deck: deckPirates })
+    $('#deck-vision').innerHTML = deckOpenHTML({ deck: deckVision, phaseInFight: game.phase, ignoredMaxPowerCards: [] })
 
     const phaseInFight = fight.phase
     const ignoredMaxPowerCards = fight.ignoredMaxPowerCards
@@ -142,7 +145,6 @@ const UI = {
     $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
     $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
     
-    $('#deck-vision').innerHTML = deckOpenHTML({ deck: deckVision, phaseInFight: game.phase, ignoredMaxPowerCards: [] })
   },
 
   updateInterfaceForFight() {
@@ -163,9 +165,9 @@ const UI = {
     const classes = game.phases.map(phase => `phase-${phase}`)
 
     if (game.phaseIndex >= 1) {
-      $('#play-area').classList.remove(classes[game.phaseIndex - 1])
+      $('#grid-play-area').classList.remove(classes[game.phaseIndex - 1])
     }
-    $('#play-area').classList.add(classes[game.phaseIndex])
+    $('#grid-play-area').classList.add(classes[game.phaseIndex])
   },
 
   updateEndFightButtonText() {

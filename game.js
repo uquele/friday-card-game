@@ -1,29 +1,267 @@
-//@ts-check
 'use strict'
 
-import { deckHTML } from "./js/html-components/deck.js"
 import { createAllCards } from "./js/card-creation/createAllCards.js"
-import { Deck } from "./js/cardClasses/deckClass.js"
-import { deckDiscardHTML } from "./js/html-components/deckDiscard.js"
-import { deckOpenHTML } from "./js/html-components/deckOpen.js"
+import { Card } from "./js/classes/card.js"
+import { Deck } from "./js/classes/deck.js"
+import { deckClosedHTML, deckDiscardHTML, deckOpenHTML } from "./js/html-components/deckHTML.js"
+
+function $(cssSelector) {
+  return document.querySelector(cssSelector)
+}
+
+const game = {
+  difficultyLevel: 1, // not implemented
+  _lives: 20,
+  livesMax: 22,
+  phases: ['', 'green', 'yellow', 'red', 'pirates'],
+  phaseIndex: 0,
+
+  // effectPhaseMinus1: false,
+
+  get phase() {
+    return this.phases[this.phaseIndex]
+  },
+
+  nextPhase() {
+    if (this.phaseIndex === this.phases.length - 1) throw new Error(`Already on last phase`)
+    this.phaseIndex++
+    UI.updatePhase()
+  },
+
+  get lives() {
+    return this._lives
+  },
+
+  set lives(num) {
+    this._lives = Math.min(num, this.livesMax)
+    UI.updateLives()
+  }
+}
+
+const fight = {
+  phaseIndexAdditional: 0,
+
+  get phase() {
+    return game.phases[this.phaseIndex]
+  },
+
+  get phaseIndex() {
+    const index = game.phaseIndex + this.phaseIndexAdditional
+    const min = 1
+    const max = this.phases.length - 1
+    return Math.min(Math.max(index, min), max)
+  },
+  
+  removeAllModifications() {
+    this.phaseIndexAdditional = 0
+
+    const allCards = [...deckLeft.cards, ...deckCenter.cards, ...deckRight.cards]
+    allCards.forEach(card => card.removeModifications())
+  },
+
+  get isEffectStop() {
+    return !!deckLeft.cards.find(card => card.agingEffectName === 'Stop')
+  },
+
+  get ignoredMaxPowerCards() {
+    const agingHighest0CardsLength = [...deckLeft.cards, ...deckRight.cards].filter(card => card.agingEffectName === 'Highest 0').length
+    const ignoredMaxPowerCards = []
+
+    while (ignoredMaxPowerCards.length < agingHighest0CardsLength) {
+      let maxPowerValue = -Infinity
+      let maxPowerCard
+
+      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+        if (ignoredMaxPowerCards.includes(card)) return
+        if (card.power > maxPowerValue || (card.power === maxPowerValue && !card.effectDouble)) {
+          maxPowerValue = card.power
+          maxPowerCard = card
+        }
+      })
+
+      ignoredMaxPowerCards.push(maxPowerCard)
+    }
+
+    return ignoredMaxPowerCards
+  },
+
+  get powerDifference() {
+    const totalPower = [...deckLeft.cards, ...deckRight.cards].reduce((sum, card) => {
+      //@ts-ignore
+      if (this.ignoredMaxPowerCards.includes(card)) return sum
+      if (card.effectDouble) return sum + card.power * 2
+      return sum + card.power
+    }, 0)
+
+    return totalPower - deckCenter.totalObstacle(fight.phase)
+  },
+
+  get livesLostThisFight() {
+    return Math.max(-fight.powerDifference, 0)
+  },
+
+  get agingCardLifeLoss() {
+    let sum = 0;
+    sum += fight.allCards.filter(card => card.agingEffectName === 'Life -1').length
+    sum += fight.allCards.filter(card => card.agingEffectName === 'Life -2').length * 2
+    return sum
+  },
+
+  get allCards() {
+    return [...deckLeft.cards, ...deckRight.cards]
+  },
 
 
-//#region - INITIAL SETUP //
+}
 
-let difficultyLevel = 1 // not implemented
-let lives = 20
-let livesMax = 22
-const phases = ['', 'green', 'yellow', 'red', 'pirates']
-let phase = phases[0]
-let livesLostThisFight
-let effectPhaseMinus1 = false
+const UI = {
+  drawDecks() {
+    // setup check
 
-// create all cards //
+    // console.log('deckFighting')
+    // console.log(deckFighting)
+    // console.log('deckHazard')
+    // console.log(deckHazard)
+    // console.log('deckAging')
+    // console.log(deckAging)
+    // console.log('deckPirates')
+    // console.log(deckPirates)
+
+    // !!! NOTE !!!
+    // Deck elements are constant, while card elements are always redrawn.
+    // You will need to reattach all event listners to cards, but it is options for decks
+    // This also means that removing event listners from cards in not needed, but is needed for decks
+
+    $('#grid-deck-hazard').innerHTML = deckClosedHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
+    $('#grid-deck-fighting').innerHTML = deckClosedHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
+    $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
+    $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
+
+    const phaseInFight = fight.phase
+    const ignoredMaxPowerCards = fight.ignoredMaxPowerCards
+    const isStop = fight.isEffectStop
+
+    $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards })
+    $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
+    $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
+
+    // $('#hazard').addEventListener('click', deckClick)
+    // $('#fighting').addEventListener('click', deckClick)
+    // $('#aging').addEventListener('click', deckClick)
+  },
+
+  updateInterfaceForFight() {
+    $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
+    
+    UI.drawDecks()
+    
+    UI.hideAllButtons()
+    $('#end-fight').hidden = false
+    UI.updateEndFightButtonText()
+  
+    $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
+    fight.allCards.forEach(card => UI.addCardEvent(card, useCardEffectClick))
+  },
+
+  updatePhase() {
+    $('#phase').innerText = game.phases[game.phaseIndex];
+    const classes = game.phases.map(phase => `phase-${phase}`)
+
+    if (game.phaseIndex >= 1) {
+      $('#play-area').classList.remove(classes[game.phaseIndex - 1])
+    }
+    $('#play-area').classList.add(classes[game.phaseIndex])
+  },
+
+  updateEndFightButtonText() {
+    $('#end-fight').innerText = `End fight (${fight.powerDifference})`
+  },
+
+  updateNextFightButtonText() {
+    $('#next-fight').innerText = `Next fight (${fight.livesLost})`
+  },
+
+  updateLives() {
+    $('#lives').innerText = game.lives;
+    if (game.lives <= 0) $('#game-over').innerText = 'ROBINSON DIED - NO HEALTH LEFT'
+  },
+
+  // events
+
+  addCardEvent(card, fn) {
+    return $(`#card${card.id}`).addEventListener('click', fn)
+  },
+
+  removeCardEvent(card, fn) {
+    return $(`#card${card.id}`).removeEventListener('click', fn)
+  },
+
+  removeAllEvents() {
+    $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
+    fight.allCards.forEach(card => UI.removeCardEvent(card, useCardEffectClick))
+  },
+
+  hideAllButtons() {
+    $('#start-game').hidden = true
+    $('#end-fight').hidden = true
+    $('#next-fight').hidden = true
+    $('#fight-hazard').hidden = true
+    $('#discard-hazard').hidden = true
+    $('#stop-exchanging').hidden = true
+  },
+
+  // search
+
+  /**
+   * 
+   * @param {*} element 
+   * @returns {[Card, Deck]}
+   */
+  findCardAndDeck(element) {
+    return [UI.findCard(element), UI.findDeck(element)]
+  },
+  
+  findCard(element) {
+    const cardId = UI.findCardId(element)
+    const deck = UI.findDeck(element)
+    return deck.findCardById(cardId)
+  },
+  
+  findDeck(element) {
+    const elemId = UI.findId(element)
+    if (!elemId.startsWith('deck-')) return UI.findDeck($(`#${elemId}`).parentElement)
+    const deckName = elemId.slice(5)
+  
+    switch (deckName) {
+      case 'left':
+        return deckLeft
+      case 'center':
+        return deckCenter
+      case 'right':
+        return deckRight
+      default:
+        throw new Error(`Deck with name ${deckName} not found`)
+    }
+  },
+  
+  findCardId(element) {
+    const elemId = UI.findId(element)
+    if (!elemId.startsWith('card')) throw new Error(`Unexpected element id: ${element.id}`)
+    return +elemId.slice(4)
+  },
+
+  findId(element) {
+    if (element.id) return element.id
+    return UI.findId(element.parentElement)
+  },
+
+
+}
+
+//#region   CREATE ALL DECKS
 
 const CARDS = createAllCards()
 Object.freeze(CARDS)
-
-// create all decks //
 
 const deckFighting = new Deck(CARDS.filter(card => card.type === 'fighting'))
 const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
@@ -38,6 +276,9 @@ const deckRight = new Deck()
 
 if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
+//#endregion
+
+//#region   PREPARE DECKS FOR THE GAME
 // easy difficulty setup //
 
 deckFighting.shuffle()
@@ -51,51 +292,50 @@ const deckAging = new Deck([...deckAgingVeryOld.cards, ...deckAgingOld.cards])
 while (deckPirates.length > 2) {
   deckPirates.drawCard('random')
 }
+//#endregion
 
-// interface //
+//#region   PREPARE UI FOR THE GAME
 
-drawDecks()
+UI.drawDecks()
+UI.updateLives()
+UI.updatePhase()
+$('#start-game').hidden = false
+$('#help').innerText = ''
 
-$('#lives').innerText = lives;
-$('#phase').innerText = phase;
-$('#start-game').hidden = false;
+// set button events
 $('#start-game').addEventListener('click', startGame); // <- game starts here
-$('#help').innerText = '';
+$('#end-fight').addEventListener('click', endFightClick)
+$('#next-fight').addEventListener('click', nextFightClick)
+$('#fight-hazard').addEventListener('click', fightHazardClick)
+$('#discard-hazard').addEventListener('click', discardHazardClick)
+$('#stop-exchanging').addEventListener('click', stopExchangingClick)
 
 //#endregion
 
-
-//#region - ACTIONS //
-
-// before fight
+//#region   CLICK ACTIONS
 
 function startGame() {
-  $('#start-game').hidden = true;
-  $('#end-fight').addEventListener('click', endFightClick) // used later
-  $('#next-fight').addEventListener('click', nextFightClick) // used later
-
-  nextPhase()
+  UI.hideAllButtons()
+  game.nextPhase()
   chooseAHazard()
 }
+
+// before fight
 
 function chooseAHazard() {
   if (deckHazard.length === 0) {
     deckHazardDiscard.shuffle()
     deckHazard.addCards(deckHazardDiscard.removeAllCards())
-    nextPhase()
+    game.nextPhase()
   }
 
   if (deckHazard.length === 1) {
     const card1 = deckHazard.drawCard()
     deckCenter.addCard(card1)
-    drawDecks()
 
+    UI.drawDecks()
     $('#fight-hazard').hidden = false
     $("#discard-hazard").hidden = false
-
-    $('#fight-hazard').addEventListener('click', fightHazardClick)
-    $("#discard-hazard").addEventListener('click', discardHazardClick)
-
     $('#help').innerText = `Choose whether you want to find the last remaining hazard in the deck`
     return
   }
@@ -105,16 +345,14 @@ function chooseAHazard() {
   deckCenter.addCard(card1)
   deckCenter.addCard(card2)
 
-  drawDecks()
-
-  $(`#card${card1.id}`).addEventListener('click', hazardChosenClick)
-  $(`#card${card2.id}`).addEventListener('click', hazardChosenClick)
-
+  UI.drawDecks()
+  UI.addCardEvent(card1.id, hazardChosenClick)
+  UI.addCardEvent(card2.id, hazardChosenClick)
   $('#help').innerText = `Choose 1 hazard card`
 }
 
 function hazardChosenClick(event) {
-  const cardId = findCardID(event.target)
+  const cardId = UI.findCardId(event.target)
   const index = deckCenter.cards.findIndex(card => card.id === cardId)
   const removeIndex = index === 0 ? 1 : 0
   const cardToRemove = deckCenter.cards[removeIndex]
@@ -131,8 +369,6 @@ function fightHazardClick() {
   fightingDeckClick()
 }
 
-// during fight
-
 function discardHazardClick() {
   $('#fight-hazard').hidden = true
   $("#discard-hazard").hidden = true
@@ -141,19 +377,21 @@ function discardHazardClick() {
   chooseAHazard()
 }
 
+// during fight
+
 function fightingDeckClick() {
   if (deckFighting.length === 0) fightingDeckRestock()
 
-  const freeDraw = deckLeft.length < deckCenter.totalDraw && !isEffectStop()
+  const freeDraw = deckLeft.length < deckCenter.totalDraw && !fight.isEffectStop
 
   if (freeDraw) {
     deckLeft.addCard(deckFighting.drawCard())
   } else {
-    setLives(lives - 1)
+    game.lives--
     deckRight.addCard(deckFighting.drawCard())
   }
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function fightingDeckRestock() {
@@ -166,498 +404,277 @@ function fightingDeckRestock() {
 
 }
 
-function updateInterfaceForFight() {
-  drawDecks()
-
-  $('#grid-deck-fighting').addEventListener('click', fightingDeckClick) // may fire more than once?
-
-  deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
-  deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', useCardEffect))
-
-  $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
-
-  $('#end-fight').hidden = false
-  updateEndFightButtonText()
-}
-
-function useCardEffect(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+function useCardEffectClick(event) {
+  const [cardClicked, deck] = UI.findCardAndDeck(event.target)
   const centerCard = deckCenter.cards[0]
 
-  if (card.skillName === '' || card.skillUsed) return
+  if (cardClicked.skillName === '' || cardClicked.skillUsed) return
 
-  switch (card.skillName) {
-    case 'Life +2':
-      setLives(Math.min(lives + 2, livesMax))
-      card.skillUsed = true
-      updateInterfaceForFight()
-      break;
+  switch (cardClicked.skillName) {
     case 'Life +1':
-      setLives(Math.min(lives + 1, livesMax))
-      card.skillUsed = true
-      updateInterfaceForFight()
-      break
+      game.lives++
+    case 'Life +2':
+      game.lives++
+      cardClicked.skillUsed = true
+      UI.updateInterfaceForFight()
+      break;
+
     case 'Draw +1':
-      centerCard.additionalDraw += 1
-      card.skillUsed = true
-      updateInterfaceForFight()
-      break
+      centerCard.additionalDraw++
     case 'Draw +2':
-      centerCard.additionalDraw += 2
-      card.skillUsed = true
-      updateInterfaceForFight()
+      centerCard.additionalDraw++
+      cardClicked.skillUsed = true
+      UI.updateInterfaceForFight()
       break
+
     case 'Stage -1':
-      effectPhaseMinus1 = true
-      card.skillUsed = true
-      updateInterfaceForFight()
+      fight.phaseIndexAdditional--
+      cardClicked.skillUsed = true
+      UI.updateInterfaceForFight()
       break
+
     case 'Double':
-      const appliedDoubleCards = [...deckLeft.cards, ...deckRight.cards].filter(card => card.effectDouble)
-      const nothingToApplyEffectOn = deckLeft.length + deckRight.length - appliedDoubleCards.length <= 1
+      const appliedDoubleCards = fight.allCards.filter(card => card.effectDouble)
+      const nothingToApplyEffectOn = fight.allCards.length - appliedDoubleCards.length <= 1
       if (nothingToApplyEffectOn) return
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+      cardClicked.skillUsed = true
 
-        const sameCardThatWasClicked = card.id === cardId
-        const effectDoubleWasAlreadyApplied = appliedDoubleCards.includes(card)
+      $('#help').innerText = `Choose a card to apply 'Double' effect`
+      UI.hideAllButtons()
+      UI.removeAllEvents()
 
-        if (sameCardThatWasClicked || effectDoubleWasAlreadyApplied) return
-        $(`#card${card.id}`).addEventListener('click', applyEffectDoubleClick)
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id || appliedDoubleCards.includes(card)) return
+        UI.addCardEvent(card, applyEffectDoubleClick)
       });
 
-      $('#end-fight').hidden = true
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
-      $('#help').innerText = `Choose a card to apply 'Double' effect`
-
-      card.skillUsed = true
       break
+
     case 'Exchange 1':
       if (deckFightingDiscard.length === 0) return
-      if (deckLeft.length + deckRight.length <= 1) return
+      if (fight.allCards.length <= 1) return
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+      cardClicked.skillUsed = true
 
-        if (card.id === cardId) return
-        $(`#card${card.id}`).addEventListener('click', applyEffectExchange)
+      $('#help').innerText = `Choose a card to exchange with discard pile`;
+      UI.removeAllEvents()
+      UI.hideAllButtons()
+
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id) return
+        UI.addCardEvent(card, applyEffectExchange)
       })
 
-      $('#end-fight').hidden = true;
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
-      $('#help').innerText = `Choose a card to exchange with discard pile`;
-
-      card.skillUsed = true
       break;
+
     case 'Exchange 2':
       if (deckFightingDiscard.length === 0) return
-      if (deckLeft.length + deckRight.length <= 1) return
+      if (fight.allCards.length <= 1) return
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+      cardClicked.skillUsed = true
 
-        if (card.id === cardId) return
-        $(`#card${card.id}`).addEventListener('click', applyEffectExchange1)
-      })
-
-      $('#end-fight').hidden = true;
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
       $('#help').innerText = `Choose the 1st card to exchange with discard pile`;
+      UI.removeAllEvents()
+      UI.hideAllButtons()
 
-      card.skillUsed = true
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id) return
+        UI.addCardEvent(card, (event) => applyEffectExchange1(event, cardClicked))
+      })
+
       break;
+
     case 'Put under pile':
-      if (deckLeft.length + deckRight.length <= 1) return
+      if (fight.allCards.length <= 1) return
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
+      cardClicked.skillUsed = true
 
-        if (card.id === cardId) return
-        $(`#card${card.id}`).addEventListener('click', applyEffectPutUnderPile)
-      })
-
-      $('#end-fight').hidden = true;
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
       $('#help').innerText = `Choose a card to put under the fighting deck`;
+      UI.removeAllEvents()
+      UI.hideAllButtons()
 
-      card.skillUsed = true
-      break
-    case 'Destroy':
-      if (deckLeft.length + deckRight.length <= 1) return
-
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-        $(`#card${card.id}`).removeEventListener('click', useCardEffect)
-
-        if (card.id === cardId) return
-        $(`#card${card.id}`).addEventListener('click', applyEffectDestroy)
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id) return
+        UI.addCardEvent(card, applyEffectPutUnderPile)
       })
 
-      $('#end-fight').hidden = true;
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
-      $('#help').innerText = `Choose a card to destroy`;
-
-      card.skillUsed = true
       break
+
+    case 'Destroy':
+      if (fight.allCards.length <= 1) return
+
+      cardClicked.skillUsed = true
+
+      $('#help').innerText = `Choose a card to destroy`;
+      UI.removeAllEvents()
+      UI.hideAllButtons()
+
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id) return
+        UI.addCardEvent(card, applyEffectDestroy)
+      })
+
+      break
+
     case 'Copy':
-      const cardsWithSkill = [...deckLeft.cards, ...deckRight.cards].filter(card => card.skillName).length
+      const cardsWithSkill = fight.allCards.filter(card => card.skillName).length
       if (cardsWithSkill <= 1) return
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(_card => {
-        $(`#card${_card.id}`).removeEventListener('click', useCardEffect)
+      $('#help').innerText = `Choose a card to copy it's effect`;
+      UI.removeAllEvents()
+      UI.hideAllButtons()
 
-        if (_card.id === cardId || !_card.skillName) return
-        $(`#card${_card.id}`).addEventListener('click', (event) => applyEffectCopy(event, card))
+      fight.allCards.forEach(card => {
+        if (card.id === cardClicked.id || !card.skillName) return
+        UI.addCardEvent(card, (event) => applyEffectCopy(event, cardClicked))
       })
 
-      $('#end-fight').hidden = true;
-      $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick);
-      $('#help').innerText = `Choose a card to copy it's effect`;
       break
+
     default:
       break;
   }
 }
 
-
 function applyEffectDoubleClick(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
   card.effectDouble = true
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function applyEffectExchange(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
-  removeCardModifications(card)
+  card.removeModifications()
 
   deck.addCard(deckFightingDiscard.drawCard('random'), deck.findIndex(card))
   deckFightingDiscard.addCard(deck.removeCard(card), 'top')
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
-function applyEffectExchange1(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+function applyEffectExchange1(event, cardExchange) {
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
-  removeCardModifications(card)
+  card.removeModifications()
 
   deck.addCard(deckFightingDiscard.drawCard('random'), deck.findIndex(card))
   deckFightingDiscard.addCard(deck.removeCard(card), 'top')
 
-  drawDecks();
-
-  [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-    if (card.id === cardId) return
-    $(`#card${card.id}`).addEventListener('click', applyEffectExchange2)
-  })
-
   $('#help').innerText = `Choose the 2nd card to exchange with discard pile or click 'Stop exchanging'`;
+  UI.drawDecks()
   $('#stop-exchanging').hidden = false
-  $('#stop-exchanging').addEventListener('click', stopExchangingClick)
+
+  fight.allCards.forEach(card => {
+    if (card.id === cardExchange.id) return
+    UI.addCardEvent(card, applyEffectExchange2)
+  })
 }
 
 function applyEffectExchange2(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
-  removeCardModifications(card)
+  card.removeModifications()
 
   deck.addCard(deckFightingDiscard.drawCard('random-except-top'), deck.findIndex(card))
   deckFightingDiscard.addCard(deck.removeCard(card), 'top')
 
-  stopExchangingClick()
+  UI.updateInterfaceForFight()
 }
 
 function stopExchangingClick() {
-  $('#stop-exchanging').hidden = true
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function applyEffectPutUnderPile(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
-  removeCardModifications(card)
+  card.removeModifications()
 
   if (deckFighting.length === 0) fightingDeckRestock()
 
   deckFighting.addCard(deck.removeCard(card), 'bottom')
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function applyEffectDestroy(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
   if (deckLeft.cards.find(c => c === card)) deckCenter.cards[0].additionalDraw -= 1
   deck.removeCard(card)
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function applyEffectCopy(event, cardSender) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
   cardSender.copiedSkillName = card.skillName
 
-  updateInterfaceForFight()
+  UI.updateInterfaceForFight()
 }
 
 function endFightClick() {
   $('#end-fight').hidden = true
   $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
 
-  livesLostThisFight = Math.max(-powerDifference(), 0)
-  setLives(lives - livesLostThisFight)
+  game.lives = game.lives - fight.livesLostThisFight - fight.agingCardLifeLoss
 
-  let agingCardLifeLoss = 0;
-  agingCardLifeLoss += deckLeft.cards.filter(card => card.agingEffectName === 'Life -1').length
-  agingCardLifeLoss += deckLeft.cards.filter(card => card.agingEffectName === 'Life -2').length * 2
-  agingCardLifeLoss += deckRight.cards.filter(card => card.agingEffectName === 'Life -1').length
-  agingCardLifeLoss += deckRight.cards.filter(card => card.agingEffectName === 'Life -2').length * 2
-  setLives(lives - agingCardLifeLoss)
-
-  const won = livesLostThisFight === 0
+  const won = fight.livesLostThisFight === 0
 
   if (won) {
-    removeAllModifications()
+    fight.removeAllModifications()
 
     const centerCard = deckCenter.drawCard()
     centerCard.fightingSide = true
-    deckFightingDiscard.addCard(centerCard)
 
+    deckFightingDiscard.addCard(centerCard)
     deckFightingDiscard.addCards(deckLeft.removeAllCards())
     deckFightingDiscard.addCards(deckRight.removeAllCards())
 
     chooseAHazard() // loops
 
   } else {
-    updateNextFightButtonText()
-
-    deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
-    deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
+    $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
 
     $('#next-fight').hidden = false
+    UI.updateNextFightButtonText()
 
-    $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
+    fight.allCards.forEach(card => UI.addCardEvent(card, destroyCardForHealth))
   }
-
 
 }
 
 // after fight
 
-function removeCardModifications(card) {
-  card.skillUsed = false
-  card.additionalDraw = 0
-  card.effectDouble = false
-  card.copiedSkillName = undefined
-}
-
-function removeAllModifications() {
-  [...deckLeft.cards, ...deckRight.cards, ...deckCenter.cards].forEach(card => removeCardModifications(card));
-  effectPhaseMinus1 = false
-}
-
 function destroyCardForHealth(event) {
-  const cardId = findCardID(event.target)
-  const deck = findDeck(event.target)
-  const card = deck.findCardById(cardId)
+  const [card, deck] = UI.findCardAndDeck(event.target)
 
-  if (card.removeCost > livesLostThisFight) return
-
-  livesLostThisFight -= card.removeCost
+  if (card.removeCost > fight.livesLostThisFight) return
   deck.removeCard(card)
 
-  updateNextFightButtonText()
-  drawDecks()
-
-  deckLeft.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
-  deckRight.cards.forEach(card => $(`#card${card.id}`).addEventListener('click', destroyCardForHealth))
+  UI.updateNextFightButtonText()
+  UI.drawDecks()
+  fight.allCards.forEach(card => UI.addCardEvent(card, destroyCardForHealth))
 }
 
 function nextFightClick() {
-  $('#next-fight').hidden = true
-
-  removeAllModifications()
+  UI.hideAllButtons()
+  fight.removeAllModifications()
 
   deckHazardDiscard.addCards(deckCenter.removeAllCards())
   deckFightingDiscard.addCards(deckLeft.removeAllCards())
   deckFightingDiscard.addCards(deckRight.removeAllCards())
 
   chooseAHazard() // loops
-
 }
 
 //#endregion
 
-
-//#region - RE-DRAW INTERFACE //
-
-function drawDecks() {
-  // setup check
-
-  // console.log('deckFighting')
-  // console.log(deckFighting)
-  // console.log('deckHazard')
-  // console.log(deckHazard)
-  // console.log('deckAging')
-  // console.log(deckAging)
-  // console.log('deckPirates')
-  // console.log(deckPirates)
-
-  $('#grid-deck-hazard').innerHTML = deckHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
-  $('#grid-deck-fighting').innerHTML = deckHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
-  $('#grid-deck-aging-and-fighting-discard').innerHTML = deckHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
-  $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
-
-  const phaseInFight = effectPhaseMinus1 ? getPreviousPhase() : phase
-  const ignoredMaxPowerCards = getIgnoredMaxPowerCards()
-  const isStop = isEffectStop()
-
-  $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards })
-  $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
-  $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
-
-  // $('#hazard').addEventListener('click', deckClick)
-  // $('#fighting').addEventListener('click', deckClick)
-  // $('#aging').addEventListener('click', deckClick)
-}
-
-function updateEndFightButtonText() {
-  $('#end-fight').innerText = `End fight (${powerDifference()})`
-}
-
-function updateNextFightButtonText() {
-  $('#next-fight').innerText = `Next fight (${livesLostThisFight})`
-}
-
-//#endregion
-
-
-//#region - HELPERS //
-
-// calculations
-
-function powerDifference() {
-  const ignoredMaxPowerCards = getIgnoredMaxPowerCards();
-
-  const totalPower = [...deckLeft.cards, ...deckRight.cards].reduce((sum, card) => {
-    if (ignoredMaxPowerCards.includes(card)) return sum
-    if (card.effectDouble) return sum + card.power * 2
-    return sum + card.power
-  }, 0)
-
-  return totalPower - deckCenter.totalObstacle(effectPhaseMinus1 ? getPreviousPhase() : phase)
-}
-
-function getIgnoredMaxPowerCards() {
-  const agingHighest0CardsLength = [...deckLeft.cards, ...deckRight.cards].filter(card => card.agingEffectName === 'Highest 0').length
-  const ignoredMaxPowerCards = []
-
-  while (ignoredMaxPowerCards.length < agingHighest0CardsLength) {
-    let maxPowerValue = -Infinity
-    let maxPowerCard
-
-    [...deckLeft.cards, ...deckRight.cards].forEach(card => {
-      if (ignoredMaxPowerCards.includes(card)) return
-      if (card.power > maxPowerValue || (card.power === maxPowerValue && !card.effectDouble)) {
-        maxPowerValue = card.power
-        maxPowerCard = card
-      }
-    })
-
-    ignoredMaxPowerCards.push(maxPowerCard)
-  }
-
-  return ignoredMaxPowerCards
-}
-
-function getPreviousPhase() {
-  const currentIndex = phases.findIndex(value => value === phase)
-  const previousIndex = Math.max(currentIndex - 1, 1)
-  return phases[previousIndex]
-
-}
-
-function isEffectStop() {
-  return !!deckLeft.cards.find(card => card.agingEffectName === 'Stop')
-}
-
-// setters
-
-function setLives(num) {
-  if (num <= 0) {
-    $('#game-over').innerText = 'ROBINSON DIED - NO HEALTH LEFT'
-  }
-  lives = num
-  $('#lives').innerText = lives;
-}
-
-function nextPhase() {
-  const currentIndex = phases.findIndex(value => value === phase)
-  if (currentIndex === phases.length - 1) throw new Error(`Already on last phase`)
-
-  phase = phases[currentIndex + 1]
-  $('#phase').innerText = phase;
-
-  const classes = phases.map(phase => `phase-${phase}`)
-  $('#play-area').classList.remove(classes[currentIndex])
-  $('#play-area').classList.add(classes[currentIndex + 1])
-}
-
-// element search
-
-function $(cssSelector) {
-  return document.querySelector(cssSelector)
-}
-
-function findID(element) {
-  if (element.id) return element.id
-  return findID(element.parentElement)
-}
-
-function findCardID(element) {
-  const elemId = findID(element)
-  if (!elemId.startsWith('card')) throw new Error(`Unexpected element id: ${element.id}`)
-  return +elemId.slice(4)
-}
-
-function findDeck(element) {
-  const elemId = findID(element)
-  if (!elemId.startsWith('deck-')) return findDeck($(`#${elemId}`).parentElement)
-  const deckName = elemId.slice(5)
-
-  switch (deckName) {
-    case 'left':
-      return deckLeft
-    case 'center':
-      return deckCenter
-    case 'right':
-      return deckRight
-    default:
-      throw new Error(`Deck with name ${deckName} not found`)
-  }
-}
-
-//#endregion
 
 
 // switch (difficultyLevel) {

@@ -1,6 +1,12 @@
+import { Card } from "./card"
+
 export class Deck {
+  /**
+   * 
+   * @param {Card[]} cardsArray
+   */
   constructor(cardsArray = []) {
-    if (!Array.isArray(cardsArray)) cardsArray = [cardsArray]
+    if (!Array.isArray(cardsArray)) throw new TypeError(`Array of cards was expected as input. Received: ${cardsArray}`)
     this.cards = cardsArray // 1st element is bottom of the deck
   }
 
@@ -9,7 +15,11 @@ export class Deck {
   }
 
   get totalPower() {
-    return this.cards.reduce((sum, card) => sum + card.power, 0)
+    return this.cards.reduce((sum, card) => sum + card.powerModified, 0)
+  }
+
+  get totalDraw() {
+    return this.cards.reduce((sum, card) => sum + card.drawModified, 0)
   }
 
   totalObstacle(phase) {
@@ -18,12 +28,8 @@ export class Deck {
       ['yellow', 'phaseYellow'],
       ['red', 'phaseRed'],
     ])
-    const currentPhase = phaseMap.get(phase)
-    return this.cards.reduce((sum, card) => sum + card[currentPhase], 0)
-  }
-
-  get totalDraw() {
-    return this.cards.reduce((sum, card) => sum + card.draw + card.additionalDraw, 0)
+    const phaseColor = phaseMap.get(phase)
+    return this.cards.reduce((sum, card) => sum + card[phaseColor], 0)
   }
 
   findCardById(id) {
@@ -82,18 +88,18 @@ export class Deck {
   /**
    * 
    * @param {Card} card 
-   * @param {'top' | 'bottom' | 'random' | number} location 
+   * @param {'top' | 'bottom' | 'random' | number} index 
    */
-  addCard(card, location = 'top') {
+  addCard(card, index = 'top') {
     const deck = this.cards
 
-    if (Number.isInteger(location)) {
-      const index = location
+    if (Number.isInteger(index)) {
+      //@ts-ignore
       deck.splice(index, 0, card)
       return
     }
 
-    switch (location) {
+    switch (index) {
       case 'top':
         deck.push(card)
         break
@@ -105,13 +111,18 @@ export class Deck {
         deck.splice(index, 0, card)
         break
       default:
-        throw new TypeError(`Unexpected location: ${location}`)
+        throw new TypeError(`Unexpected index: ${index}`)
     }
   }
 
-  addCards(cards, location = 'top') {
+   /**
+   * 
+   * @param {Card[]} cards
+   * @param {'top' | 'bottom' | 'random' | number} index 
+   */
+  addCards(cards, index = 'top') {
     for (const card of cards) {
-      this.addCard(card, location)
+      this.addCard(card, index)
     }
   }
 

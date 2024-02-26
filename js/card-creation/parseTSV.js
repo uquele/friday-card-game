@@ -1,11 +1,7 @@
-'use strict'
-//@ts-check
-
-
 /**
  * 
- * @param {String} TSVString - first row must contain the names of columns to be used as object keys
- * @returns {object[]}
+ * @param {String} TSVString First row must contain the names of columns to be used as object keys
+ * @returns {object[]} An array of objects. An object represents a line in TSV
  */
 export function parseTSV(TSVString) {
   const rows = TSVString.split('\n')

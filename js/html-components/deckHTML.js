@@ -42,13 +42,13 @@ function cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
 </div>`
 }
 
-function cardPirateHTML({ card }) {
+function cardPirateHTML({ card, isStop }) {
   return `
     <div class="card-pirate" id="card${card.id}">
       <div class="inner">
         <div class="inner-top">
           <div class="card-name">${card.name}</div>
-          <div class="free-draw">${card.draw}</div>
+          <div class="free-draw ${isStop ? 'crossed' : ''}">${card.draw + card.additionalDraw}</div>
           <div class="danger">${card.power}</div>
         </div>
         <div class="inner-bottom">
@@ -67,7 +67,7 @@ function cardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
     case 'hazard':
       return cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop })
     case 'pirates':
-      return cardPirateHTML({ card })
+      return cardPirateHTML({ card, isStop })
     default:
       throw new TypeError(`Card type ${card.type} not found`)
   }

@@ -7,7 +7,7 @@ img {
 }
 
 :root {
-  --card-scale: 0.7;
+  --card-scale: 0.75;
   --card-width: calc(223px * var(--card-scale));
   --card-height: calc(var(--card-width) * 1.78);
   --card-height-half: calc(var(--card-height) / 2);

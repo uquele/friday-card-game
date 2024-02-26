@@ -174,7 +174,7 @@ const UI = {
     $('#end-fight').innerText = `End fight (${fight.powerDifference})`
     fight.powerDifference >= 0
       ? $('#end-fight').classList.add('fight-won')
-      : $('#end-fight').classList.remove('fight-won')
+      : $('#end-fight').classList.add('fight-won')
   },
 
   updateNextFightButtonText() {
@@ -184,7 +184,7 @@ const UI = {
   updateLives() {
     const slashes = game.lives >= 0 ? '/'.repeat(game.lives) : ''
     $('#lives').innerText = `${slashes}\n${game.lives}`;
-    if (game.lives <= 0) $('#game-over').innerText = 'ROBINSON DIED - NO HEALTH LEFT'
+    if (game.lives < 0) $('#game-over').innerText = 'ROBINSON DIED DUE TO LOW HEALTH'
   },
 
   // events
@@ -348,6 +348,7 @@ function chooseAHazard() {
     }
     if (deckPirates.length === 0) {
       $('#game-over').innerText = 'ROBINSON SURVIVED! WELL DONE'
+      $('#help').innerText = ''
       UI.drawDecks()
       UI.removeAllEvents()
       return
@@ -388,7 +389,7 @@ function chooseAHazard() {
 function chooseAPirate() {
   deckCenter.addCards(deckPirates.removeAllCards())
 
-  $('#help').innerText = `Choose which pirate you would like to fight first`
+  $('#help').innerText = `Choose which pirate ship you would like to fight first`
   UI.drawDecks()
   UI.removeAllEvents()
   deckCenter.cards.forEach(card => UI.addCardEvent(card, pirateChosenClick))

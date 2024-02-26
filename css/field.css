@@ -36,6 +36,7 @@ html {
   grid-area: pirates;
   display: flex;
   justify-content: center;
+  gap: 10px;
 }
 
 #grid-deck-hazard {

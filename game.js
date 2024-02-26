@@ -127,27 +127,22 @@ const UI = {
     // console.log('deckPirates')
     // console.log(deckPirates)
 
-    // !!! NOTE !!!
-    // Deck elements are constant, while card elements are always redrawn.
-    // You will need to reattach all event listners to cards, but it is options for decks
-    // This also means that removing event listners from cards in not needed, but is needed for decks
+    // These ids are only for css. For event listeners use their own deck ids
 
-    $('#grid-deck-hazard').innerHTML = deckClosedHTML(deckHazard, { displayName: 'Hazard', id: 'hazard' })
-    $('#grid-deck-fighting').innerHTML = deckClosedHTML(deckFighting, { displayName: 'Fighting', id: 'fighting' })
-    $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'fightingDiscard' })
-    $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'hazardDiscard' })
+    $('#grid-deck-hazard').innerHTML = deckClosedHTML(deckHazard, { displayName: 'Hazard', id: 'deck-hazard' })
+    $('#grid-deck-vision-and-fighting').innerHTML = '<div id="deck-vision"></div>' + deckClosedHTML(deckFighting, { displayName: 'Fighting', id: 'deck-fighting' })
+    $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'deck-aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'deck-fighting-discard' })
+    $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'deck-hazard-discard' })
 
     const phaseInFight = fight.phase
     const ignoredMaxPowerCards = fight.ignoredMaxPowerCards
     const isStop = fight.isEffectStop
-
+    
     $('#deck-left').innerHTML = deckOpenHTML({ deck: deckLeft, phaseInFight, ignoredMaxPowerCards })
     $('#deck-center').innerHTML = deckOpenHTML({ deck: deckCenter, phaseInFight, ignoredMaxPowerCards, isStop })
     $('#deck-right').innerHTML = deckOpenHTML({ deck: deckRight, phaseInFight, ignoredMaxPowerCards })
-
-    // $('#hazard').addEventListener('click', deckClick)
-    // $('#fighting').addEventListener('click', deckClick)
-    // $('#aging').addEventListener('click', deckClick)
+    
+    $('#deck-vision').innerHTML = deckOpenHTML({ deck: deckVision, phaseInFight: game.phase, ignoredMaxPowerCards: [] })
   },
 
   updateInterfaceForFight() {
@@ -159,7 +154,7 @@ const UI = {
     $('#end-fight').hidden = false
     UI.updateEndFightButtonText()
 
-    $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
+    $('#deck-fighting').addEventListener('click', fightingDeckClick)
     fight.allCards.forEach(card => UI.addCardEvent(card, useCardEffectClick))
   },
 
@@ -197,7 +192,7 @@ const UI = {
   },
 
   removeAllEvents() {
-    $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
+    $('#deck-fighting').removeEventListener('click', fightingDeckClick)
     fight.allCards.forEach(card => UI.removeCardEvent(card, useCardEffectClick))
   },
 
@@ -208,6 +203,9 @@ const UI = {
     $('#fight-hazard').hidden = true
     $('#discard-hazard').hidden = true
     $('#stop-exchanging').hidden = true
+    $('#vision-stop-taking-cards').hidden = true
+    $('#vision-discard-a-card').hidden = true
+    $('#vision-discard-no-cards').hidden = true
   },
 
   // search
@@ -239,6 +237,8 @@ const UI = {
         return deckCenter
       case 'right':
         return deckRight
+      case 'vision':
+        return deckVision
       default:
         throw new Error(`Deck with name ${deckName} not found`)
     }
@@ -273,6 +273,7 @@ const deckHazardDiscard = new Deck()
 const deckLeft = new Deck()
 const deckCenter = new Deck()
 const deckRight = new Deck()
+const deckVision = new Deck()
 
 if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
@@ -309,6 +310,9 @@ $('#next-fight').addEventListener('click', nextFightClick)
 $('#fight-hazard').addEventListener('click', fightHazardClick)
 $('#discard-hazard').addEventListener('click', discardHazardClick)
 $('#stop-exchanging').addEventListener('click', stopExchangingClick)
+$('#vision-stop-taking-cards').addEventListener('click', visionStopTakingCardsClick)
+$('#vision-discard-a-card').addEventListener('click', visionDiscardACardClick)
+$('#vision-discard-no-cards').addEventListener('click', visionDiscardNoCardsClick)
 
 //#endregion
 
@@ -345,10 +349,11 @@ function chooseAHazard() {
   deckCenter.addCard(card1)
   deckCenter.addCard(card2)
 
+  $('#help').innerText = `Choose 1 hazard card`
   UI.drawDecks()
+  UI.removeAllEvents()
   UI.addCardEvent(card1, hazardChosenClick)
   UI.addCardEvent(card2, hazardChosenClick)
-  $('#help').innerText = `Choose 1 hazard card`
 }
 
 function hazardChosenClick(event) {
@@ -533,10 +538,107 @@ function useCardEffectClick(event) {
 
       break
 
+    case 'Vision':
+      if (deckFighting.length === 0) return
+
+      cardClicked.skillUsed = true
+      
+      $('#help').innerText = `You can take up to 3 cards from the Fighting pile`;
+
+      UI.hideAllButtons()
+
+      UI.removeAllEvents()
+      $('#deck-fighting').addEventListener('click', applyEffectVisionTakeCard)
+
+      break
     default:
       break;
   }
 }
+
+// vision - start
+
+function applyEffectVisionTakeCard() {
+  if (deckFighting.length === 0) return
+  if (deckVision.length > 3) return
+
+  deckVision.addCard(deckFighting.drawCard('top'))
+
+  UI.drawDecks()
+  $('#vision-stop-taking-cards').hidden = false
+
+  if (deckVision.length < 3 && deckFighting.length > 0) {
+    $('#deck-fighting').addEventListener('click', applyEffectVisionTakeCard)
+  } else {
+    applyEffectVisionMakeChoice()
+  }
+}
+
+function visionStopTakingCardsClick() {
+  applyEffectVisionMakeChoice()
+}
+
+function applyEffectVisionMakeChoice() {
+  if (deckVision.length === 0) {
+    UI.updateInterfaceForFight()
+    return
+  } 
+
+  $('#help').innerText = 'Choose whether you want to discard 1 card or not'
+  
+  UI.hideAllButtons()
+  $('#vision-discard-a-card').hidden = false
+  $('#vision-discard-no-cards').hidden = false
+
+  UI.drawDecks()
+  UI.removeAllEvents()
+}
+
+function visionDiscardACardClick() {
+  $('#help').innerText = 'Choose 1 card to discard'
+
+  UI.hideAllButtons()
+
+  UI.removeAllEvents()
+  deckVision.cards.forEach(card => UI.addCardEvent(card, applyEffectVisionDiscard))
+}
+
+function applyEffectVisionDiscard(event) {
+  const [card, deck] = UI.findCardAndDeck(event.target)
+
+  deckFightingDiscard.addCard(deckVision.removeCard(card))
+  
+  visionDiscardNoCardsClick()
+}
+
+function visionDiscardNoCardsClick() {
+  if (deckVision.length === 0) {
+    UI.updateInterfaceForFight()
+    return
+  } 
+
+  $('#help').innerText = 'Put the remaining cards back to the Fighting deck in the order of your choice'
+
+  UI.hideAllButtons()
+  UI.drawDecks()
+  UI.removeAllEvents()
+
+  deckVision.cards.forEach(card => UI.addCardEvent(card, applyEffectVisionPutBack))
+}
+
+function applyEffectVisionPutBack(event) {
+  const [card, deck] = UI.findCardAndDeck(event.target)
+
+  deckFighting.addCard(deckVision.removeCard(card), 'top')
+
+  if (deckVision.length > 0) {
+    visionDiscardNoCardsClick()
+  } else {
+    UI.updateInterfaceForFight()
+  }
+}
+
+// vision - end
 
 function applyEffectDoubleClick(event) {
   const [card, deck] = UI.findCardAndDeck(event.target)
@@ -620,8 +722,6 @@ function applyEffectCopy(event, cardSender) {
 }
 
 function endFightClick() {
-  $('#end-fight').hidden = true
-  $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
 
   fight.calculateLivesLostThisFight()
   game.lives = game.lives - fight.livesLostThisFight - fight.agingCardLifeLoss
@@ -638,14 +738,18 @@ function endFightClick() {
     deckFightingDiscard.addCards(deckLeft.removeAllCards())
     deckFightingDiscard.addCards(deckRight.removeAllCards())
 
+    UI.removeAllEvents()
+    UI.hideAllButtons()
     chooseAHazard() // loops
 
   } else {
     $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
-
+    
+    UI.hideAllButtons()
     $('#next-fight').hidden = false
     UI.updateNextFightButtonText()
-
+    
+    UI.removeAllEvents()
     fight.allCards.forEach(card => UI.addCardEvent(card, destroyCardForHealth))
   }
 

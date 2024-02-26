@@ -43,10 +43,17 @@ html {
   justify-content: right;
 }
 
-#grid-deck-fighting {
+#grid-deck-vision-and-fighting {
   grid-area: deckFighting;
   display: flex;
+  gap: 20px;
   justify-content: right;
+}
+
+#deck-vision {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 #grid-deck-hazard-discard {

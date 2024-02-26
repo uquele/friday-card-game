@@ -40,6 +40,7 @@ const game = {
 
 const fight = {
   phaseIndexAdditional: 0,
+  livesLostThisFight: 0,
 
   get phase() {
     return game.phases[this.phaseIndex]
@@ -48,10 +49,10 @@ const fight = {
   get phaseIndex() {
     const index = game.phaseIndex + this.phaseIndexAdditional
     const min = 1
-    const max = this.phases.length - 1
+    const max = game.phases.length - 1
     return Math.min(Math.max(index, min), max)
   },
-  
+
   removeAllModifications() {
     this.phaseIndexAdditional = 0
 
@@ -71,7 +72,7 @@ const fight = {
       let maxPowerValue = -Infinity
       let maxPowerCard
 
-      [...deckLeft.cards, ...deckRight.cards].forEach(card => {
+      fight.allCards.forEach(card => {
         if (ignoredMaxPowerCards.includes(card)) return
         if (card.power > maxPowerValue || (card.power === maxPowerValue && !card.effectDouble)) {
           maxPowerValue = card.power
@@ -81,14 +82,13 @@ const fight = {
 
       ignoredMaxPowerCards.push(maxPowerCard)
     }
-
     return ignoredMaxPowerCards
   },
 
   get powerDifference() {
-    const totalPower = [...deckLeft.cards, ...deckRight.cards].reduce((sum, card) => {
+    const totalPower = fight.allCards.reduce((sum, card) => {
       //@ts-ignore
-      if (this.ignoredMaxPowerCards.includes(card)) return sum
+      if (fight.ignoredMaxPowerCards.includes(card)) return sum
       if (card.effectDouble) return sum + card.power * 2
       return sum + card.power
     }, 0)
@@ -96,8 +96,8 @@ const fight = {
     return totalPower - deckCenter.totalObstacle(fight.phase)
   },
 
-  get livesLostThisFight() {
-    return Math.max(-fight.powerDifference, 0)
+  calculateLivesLostThisFight() {
+    return this.livesLostThisFight = Math.max(-fight.powerDifference, 0)
   },
 
   get agingCardLifeLoss() {
@@ -152,13 +152,13 @@ const UI = {
 
   updateInterfaceForFight() {
     $('#help').innerText = `Add fighting cards from the deck, use card abilities or end fight`
-    
+
     UI.drawDecks()
-    
+
     UI.hideAllButtons()
     $('#end-fight').hidden = false
     UI.updateEndFightButtonText()
-  
+
     $('#grid-deck-fighting').addEventListener('click', fightingDeckClick)
     fight.allCards.forEach(card => UI.addCardEvent(card, useCardEffectClick))
   },
@@ -178,7 +178,7 @@ const UI = {
   },
 
   updateNextFightButtonText() {
-    $('#next-fight').innerText = `Next fight (${fight.livesLost})`
+    $('#next-fight').innerText = `Next fight (${fight.livesLostThisFight})`
   },
 
   updateLives() {
@@ -220,18 +220,18 @@ const UI = {
   findCardAndDeck(element) {
     return [UI.findCard(element), UI.findDeck(element)]
   },
-  
+
   findCard(element) {
     const cardId = UI.findCardId(element)
     const deck = UI.findDeck(element)
     return deck.findCardById(cardId)
   },
-  
+
   findDeck(element) {
     const elemId = UI.findId(element)
     if (!elemId.startsWith('deck-')) return UI.findDeck($(`#${elemId}`).parentElement)
     const deckName = elemId.slice(5)
-  
+
     switch (deckName) {
       case 'left':
         return deckLeft
@@ -243,7 +243,7 @@ const UI = {
         throw new Error(`Deck with name ${deckName} not found`)
     }
   },
-  
+
   findCardId(element) {
     const elemId = UI.findId(element)
     if (!elemId.startsWith('card')) throw new Error(`Unexpected element id: ${element.id}`)
@@ -346,8 +346,8 @@ function chooseAHazard() {
   deckCenter.addCard(card2)
 
   UI.drawDecks()
-  UI.addCardEvent(card1.id, hazardChosenClick)
-  UI.addCardEvent(card2.id, hazardChosenClick)
+  UI.addCardEvent(card1, hazardChosenClick)
+  UI.addCardEvent(card2, hazardChosenClick)
   $('#help').innerText = `Choose 1 hazard card`
 }
 
@@ -411,23 +411,24 @@ function useCardEffectClick(event) {
   if (cardClicked.skillName === '' || cardClicked.skillUsed) return
 
   switch (cardClicked.skillName) {
-    case 'Life +1':
-      game.lives++
     case 'Life +2':
+      game.lives++
+    case 'Life +1':
       game.lives++
       cardClicked.skillUsed = true
       UI.updateInterfaceForFight()
       break;
 
-    case 'Draw +1':
-      centerCard.additionalDraw++
     case 'Draw +2':
+      centerCard.additionalDraw++
+    case 'Draw +1':
       centerCard.additionalDraw++
       cardClicked.skillUsed = true
       UI.updateInterfaceForFight()
       break
 
     case 'Stage -1':
+      if (fight.phase === 'green') return
       fight.phaseIndexAdditional--
       cardClicked.skillUsed = true
       UI.updateInterfaceForFight()
@@ -622,6 +623,7 @@ function endFightClick() {
   $('#end-fight').hidden = true
   $('#grid-deck-fighting').removeEventListener('click', fightingDeckClick)
 
+  fight.calculateLivesLostThisFight()
   game.lives = game.lives - fight.livesLostThisFight - fight.agingCardLifeLoss
 
   const won = fight.livesLostThisFight === 0
@@ -655,6 +657,8 @@ function destroyCardForHealth(event) {
   const [card, deck] = UI.findCardAndDeck(event.target)
 
   if (card.removeCost > fight.livesLostThisFight) return
+
+  fight.livesLostThisFight -= card.removeCost
   deck.removeCard(card)
 
   UI.updateNextFightButtonText()

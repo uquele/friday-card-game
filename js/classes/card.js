@@ -1,14 +1,16 @@
 export class Card {
-  constructor({ id, type, name, power, skillName, removeCost, phaseGreen, phaseYellow, phaseRed, draw, agingType, agingEffectName, pirateEffectName }) {
-    setCorrectTypes(arguments[0])
-    checkCorrectnessOfInputValues(arguments[0])
+  constructor(cardObject) {
+    setCorrectTypes(cardObject)
+    checkCorrectnessOfInputValues(cardObject)
+
+    let { id, type, name, power, skillName, removeCost, phaseGreen, phaseYellow, phaseRed, draw, agingType, agingEffectName, pirateEffectName } = cardObject
 
     this.id = id
     this.type = type
     this.name = name
     this.power = power === 'X' ? 'X' : power
 
-    this.skillName = skillName
+    this._skillName = skillName
     this.removeCost = removeCost
 
     this.phaseGreen = phaseGreen
@@ -38,7 +40,7 @@ export class Card {
 
       function setCorrectType(value) {
         if (value === '') return undefined
-        if (Number.isInteger(value)) return +value
+        if (Number.isInteger(+value)) return +value
         return value
       }
     }
@@ -79,7 +81,7 @@ export class Card {
 
       if (card.phaseGreen !== undefined || card.phaseYellow !== undefined || card.phaseRed !== undefined) {
         if (card.type !== 'hazard') throw new CardError(`Card should not have a phase value`)
-        if (!(card.phaseGreen && card.phaseYellow && card.phaseRed)) throw new CardError(`Card should have all phase values set`)
+        if (!(card.phaseGreen !== undefined && card.phaseYellow !== undefined && card.phaseRed !== undefined)) throw new CardError(`Card should have all phase values set`)
         if (!Number.isInteger(card.phaseGreen) || !Number.isInteger(card.phaseYellow) || !Number.isInteger(card.phaseRed)) throw new CardError(`Phase value must be an integer`)
       } else if (card.type === 'hazard') throw new CardError(`Card must have phase values`)
 
@@ -112,8 +114,8 @@ export class Card {
     return this.draw + this.additionalDraw
   }
 
-  get skillNameModified() {
-    return this.copiedSkillName || this.skillName
+  get skillName() {
+    return this.copiedSkillName || this._skillName
   }
 
   removeModifications() {

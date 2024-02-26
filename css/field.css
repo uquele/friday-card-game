@@ -108,6 +108,7 @@ html {
 
 #grid-play-area {
   grid-area: playArea;
+  padding: 10px;
   display: flex;
   gap: 20px;
   transition: background-color 1s;
@@ -118,7 +119,7 @@ html {
 #deck-right {
   height: 100%;
   display: flex;
-  align-items: center;
+  align-content: start;
   flex-wrap: wrap;
 }
 

@@ -48,7 +48,7 @@ function cardPirateHTML({ card, isStop }) {
       <div class="inner">
         <div class="inner-top">
           <div class="card-name">${card.name}</div>
-          <div class="free-draw ${isStop ? 'crossed' : ''}">${card.draw + card.additionalDraw}</div>
+          <div class="free-draw ${isStop ? 'crossed' : ''}">${card.draw === 'X' ? 'X' : card.draw + card.additionalDraw}</div>
           <div class="danger">${card.power}</div>
         </div>
         <div class="inner-bottom">

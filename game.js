@@ -47,10 +47,14 @@ const fight = {
   },
 
   get phaseIndex() {
-    const index = game.phaseIndex + this.phaseIndexAdditional
-    const min = 1
-    const max = 3
-    return Math.min(Math.max(index, min), max)
+    const index = keepInRange(game.phaseIndex) + this.phaseIndexAdditional
+    return keepInRange(index)
+
+    function keepInRange(num) {
+      const min = 1
+      const max = 3
+      return Math.min(Math.max(num, min), max)
+    }
   },
 
   removeAllModifications() {
@@ -134,7 +138,9 @@ const UI = {
     $('#grid-deck-aging-and-fighting-discard').innerHTML = deckClosedHTML(deckAging, { displayName: 'Aging', id: 'deck-aging' }) + deckDiscardHTML(deckFightingDiscard, { displayName: 'Fighting', id: 'deck-fighting-discard' })
     $('#grid-deck-hazard-discard').innerHTML = deckDiscardHTML(deckHazardDiscard, { displayName: 'Hazard', id: 'deck-hazard-discard' })
 
-    $('#grid-deck-pirates').innerHTML = deckOpenHTML({ deck: deckPirates })
+    if (deckPirates.length <= 2)
+      $('#grid-deck-pirates').innerHTML = deckOpenHTML({ deck: deckPirates })
+
     $('#deck-vision').innerHTML = deckOpenHTML({ deck: deckVision, phaseInFight: game.phase, ignoredMaxPowerCards: [] })
 
     const phaseInFight = fight.phase
@@ -204,6 +210,10 @@ const UI = {
 
   hideAllButtons() {
     $('#start-game').hidden = true
+    $('#difficulty-1').hidden = true
+    $('#difficulty-2').hidden = true
+    $('#difficulty-3').hidden = true
+    $('#difficulty-4').hidden = true
     $('#end-fight').hidden = true
     $('#next-fight').hidden = true
     $('#fight-hazard').hidden = true
@@ -269,15 +279,17 @@ const UI = {
 const CARDS = createAllCards()
 Object.freeze(CARDS)
 
-const deckFighting = new Deck(CARDS.filter(card => card.type === 'fighting'))
-const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
-
-// for (let i = 0; i < 28; i++) {
-//   deckHazard.drawCard()
-// }
+// only used for setup
 const deckAgingOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Old'))
 const deckAgingVeryOld = new Deck(CARDS.filter(card => card.type === 'aging' && card.agingType === 'Very old'))
+
+// created during setup
+const deckFighting = new Deck(CARDS.filter(card => card.type === 'fighting'))
+const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
 const deckPirates = new Deck(CARDS.filter(card => card.type === 'pirates'))
+const deckAging = new Deck()
+
+// created during the game
 const deckFightingDiscard = new Deck()
 const deckHazardDiscard = new Deck()
 const deckLeft = new Deck()
@@ -285,24 +297,8 @@ const deckCenter = new Deck()
 const deckRight = new Deck()
 const deckVision = new Deck()
 
-// if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
+if (CARDS.length !== deckFighting.length + deckHazard.length + deckAgingOld.length + deckAgingVeryOld.length + deckPirates.length) throw new Error(`Seems like some cards did not make it into the decks`)
 
-//#endregion
-
-//#region   PREPARE DECKS FOR THE GAME
-// easy difficulty setup //
-
-deckFighting.shuffle()
-deckHazard.shuffle()
-
-deckAgingOld.removeCard(CARDS.find(card => card.name === 'Very stupid'))
-deckAgingOld.shuffle()
-deckAgingVeryOld.shuffle()
-const deckAging = new Deck([...deckAgingVeryOld.cards, ...deckAgingOld.cards])
-
-while (deckPirates.length > 2) {
-  deckPirates.drawCard('random')
-}
 //#endregion
 
 //#region   PREPARE UI FOR THE GAME
@@ -315,6 +311,10 @@ $('#help').innerText = 'Help Robinson survive the hazards and 2 pirate ships!'
 
 // set button events
 $('#start-game').addEventListener('click', startGame); // <- game starts here
+$('#difficulty-1').addEventListener('click', setDifficulty1Click);
+$('#difficulty-2').addEventListener('click', setDifficulty2Click);
+$('#difficulty-3').addEventListener('click', setDifficulty3Click);
+$('#difficulty-4').addEventListener('click', setDifficulty4Click);
 $('#end-fight').addEventListener('click', endFightClick)
 $('#next-fight').addEventListener('click', nextFightClick)
 $('#fight-hazard').addEventListener('click', fightHazardClick)
@@ -329,6 +329,70 @@ $('#vision-discard-no-cards').addEventListener('click', visionDiscardNoCardsClic
 //#region   CLICK ACTIONS
 
 function startGame() {
+  UI.hideAllButtons()
+
+  $('#help').innerText = 'Choose difficulty level'
+  $('#difficulty-1').hidden = false
+  $('#difficulty-2').hidden = false
+  $('#difficulty-3').hidden = false
+  $('#difficulty-4').hidden = false
+}
+
+function setDifficulty1Click() {
+  game.difficultyLevel = 1
+  setDifficulty()
+}
+
+function setDifficulty2Click() {
+  game.difficultyLevel = 2
+  setDifficulty()
+}
+
+function setDifficulty3Click() {
+  game.difficultyLevel = 3
+  setDifficulty()
+}
+
+function setDifficulty4Click() {
+  game.difficultyLevel = 4
+  setDifficulty()
+}
+
+function setDifficulty() {
+  deckFighting.shuffle()
+  deckHazard.shuffle()
+  deckAgingOld.shuffle() // ->
+  deckAgingVeryOld.shuffle() // ->
+
+  const cardVeryStupid = deckAgingOld.cards.find(card => card.name === 'Very stupid')
+
+  if (![1, 2, 3, 4].includes(game.difficultyLevel)) throw new Error(`Unexpected difficulty level: ${game.difficultyLevel}`)
+
+  if (game.difficultyLevel >= 1) {
+    deckAgingOld.removeCard(cardVeryStupid)
+    game.livesMax = 22
+    game.lives = 20
+  }
+  if (game.difficultyLevel >= 2) {
+    deckFighting.addCard(deckAgingOld.drawCard('random'))
+  }
+  if (game.difficultyLevel >= 3) {
+    deckAgingOld.addCard(cardVeryStupid)
+  }
+  if (game.difficultyLevel === 4) {
+    game.livesMax = 20
+    game.lives = 18
+  }
+
+  deckAging.addCards(deckAgingVeryOld.removeAllCards()) // <-
+  deckAging.addCards(deckAgingOld.removeAllCards())  // <-
+
+  console.log(deckAging)
+
+  while (deckPirates.length > 2) {
+    deckPirates.drawCard('random')
+  }
+
   UI.hideAllButtons()
   game.nextPhase()
   chooseAHazard()
@@ -606,8 +670,11 @@ function useCardEffectClick(event) {
       $('#deck-fighting').addEventListener('click', applyEffectVisionTakeCard)
 
       break
-    default:
+
+    case undefined:
       break;
+    default:
+      throw new Error(`Unexpected card skill name: ${cardClicked.skillName}`)
   }
 }
 

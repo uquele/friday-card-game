@@ -177,7 +177,12 @@ const UI = {
   },
 
   updateEndFightButtonText() {
-    $('#end-fight').innerText = `End fight (${fight.powerDifference})`
+    if (game.phase === 'pirates' && fight.powerDifference < 0) {
+      $('#end-fight').innerText = `Give up (${fight.powerDifference})`
+    } else {
+      $('#end-fight').innerText = `End fight (${fight.powerDifference})`
+    }
+    
     fight.powerDifference >= 0
       ? $('#end-fight').classList.add('fight-won')
       : $('#end-fight').classList.add('fight-won')
@@ -197,7 +202,7 @@ const UI = {
     } else {
       $('#lives-amount').classList.remove('very-low')
     }
-    if (game.lives < 0) $('#game-over').innerText = 'ROBINSON DIED DUE TO LOW HEALTH'
+    if (game.lives < 0) $('#game-over').innerText = 'ROBINSON DIED FROM FAILING HEALTH'
   },
 
   // events

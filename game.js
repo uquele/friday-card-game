@@ -96,7 +96,6 @@ export const fight = {
     const totalPower = fight.allCards.reduce((sum, card) => {
       //@ts-ignore
       if (fight.ignoredMaxPowerCards.includes(card)) return sum
-      if (card.effectDouble) return sum + card.powerModified * 2
       return sum + card.powerModified
     }, 0)
 
@@ -188,7 +187,7 @@ const UI = {
     
     fight.powerDifference >= 0
       ? $('#end-fight').classList.add('fight-won')
-      : $('#end-fight').classList.add('fight-won')
+      : $('#end-fight').classList.remove('fight-won')
   },
 
   updateNextFightButtonText() {

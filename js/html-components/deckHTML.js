@@ -20,12 +20,15 @@ function cardFightingHTML({ card, fight }) {
 }
 
 function cardHazardHTML({ card, fight }) {
+  const crossedDraw = !card.fightingSide && fight?.isEffectStop ? 'crossed' : ''
+  const used = !card.fightingSide && !fight?.hasFreeDraw ? 'used' : ''
+  const crossedPower = fight?.ignoredHighest0Cards.includes(card) || fight?.halfZeroPowerCards.includes(card) ? 'crossed' : ''
   return `
 <div class="card-hazard ${card.fightingSide ? 'card-as-fighting' : ''}" id="card${card.id}">
   <div class="half">
     <div class="hazard-half">
       <div class="hazard-name">${card.name}</div>
-      <div class="free-draw ${fight?.isEffectStop ? 'crossed' : ''}">${card.draw + card.additionalDraw}</div>
+      <div class="free-draw ${crossedDraw} ${used}">${card.draw + card.additionalDraw}</div>
       <div class="danger-levels">
         <div class="danger-red ${fight?.phase === 'red' ? '' : 'inactive'}">${card.phaseRed}</div>
         <div class="danger-yellow ${fight?.phase === 'yellow' ? '' : 'inactive'}">${card.phaseYellow}</div>
@@ -38,19 +41,21 @@ function cardHazardHTML({ card, fight }) {
     <div class="fighting-half">
       ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       <div class="lives ${card.removeCost === 2 ? 'two' : ''}">${card.removeCost === 1 ? `${healthIconHTML}` : `${healthIconHTML}${healthIconHTML}`}</div>
-      <div class="power ${card.effectDouble ? 'doubled' : ''} ${fight?.ignoredHighest0Cards.includes(card) || fight?.halfZeroPowerCards.includes(card) ? 'crossed' : ''}">${card.powerInFight}</div>
+      <div class="power ${card.effectDouble ? 'doubled' : ''} ${crossedPower}">${card.powerInFight}</div>
     </div>
   </div>
 </div>`
 }
 
 function cardPirateHTML({ card, fight }) {
+  const crossedDraw = fight?.isEffectStop ? 'crossed' : ''
+  const used = !fight?.hasFreeDraw ? 'used' : ''
   return `
     <div class="card-pirate" id="card${card.id}">
       <div class="inner">
         <div class="inner-top">
           <div class="card-name">${card.name}</div>
-          <div class="free-draw ${fight?.isEffectStop ? 'crossed' : ''}">${card.draw === 'X' ? 'X' : card.draw + card.additionalDraw}</div>
+          <div class="free-draw ${crossedDraw} ${used}">${card.draw === 'X' ? 'X' : card.draw + card.additionalDraw}</div>
           <div class="danger">${card.power}</div>
         </div>
         <div class="inner-bottom">

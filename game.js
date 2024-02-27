@@ -423,6 +423,14 @@ export const fight = {
     return totalPower - deckCenter.totalObstacle(fight.phase)
   },
 
+  get hasFreeDraw() {
+    return deckLeft.length < deckCenter.totalDraw
+  },
+
+  get freeDrawAvailable() {
+    return this.hasFreeDraw && !this.isEffectStop
+  },
+
   // utils
 
   get allCards() {
@@ -458,20 +466,6 @@ const deckLeft = new Deck()
 const deckCenter = new Deck()
 const deckRight = new Deck()
 const deckVision = new Deck()
-
-const allDecks = [
-  deckFighting,
-  deckHazard,
-  deckPirates,
-  deckAging,
-
-  deckFightingDiscard,
-  deckHazardDiscard,
-  deckLeft,
-  deckCenter,
-  deckRight,
-  deckVision
-]
 
 //#endregion
 
@@ -665,9 +659,7 @@ function fightingDeckClick() {
     return
   }
 
-  const freeDraw = deckLeft.length < deckCenter.totalDraw && !fight.isEffectStop
-
-  if (freeDraw) {
+  if (fight.freeDrawAvailable) {
     deckLeft.addCard(deckFighting.drawCard())
   } else {
     game.lives--
@@ -847,15 +839,14 @@ function useCardEffectClick(event) {
 // vision - start
 
 function applyEffectVisionTakeCardClick() {
-  const cantTakeMoreCards = deckFighting.length === 0 || deckVision.length > 3
-  if (cantTakeMoreCards) return
+  if (deckFighting.length === 0 || deckVision.length === 3) return
 
   deckVision.addCard(deckFighting.drawCard('top'))
 
   UI.drawDecks()
   UI.showButtons(['#vision-stop-taking-cards'])
 
-  if (cantTakeMoreCards) {
+  if (deckFighting.length === 0 || deckVision.length === 3) {
     applyEffectVisionMakeChoice()
   } else {
     UI.addDeckFightingEvent(applyEffectVisionTakeCardClick)

@@ -23,6 +23,7 @@
   --card-color-hazard-bg: #b2d5d8;
   --card-color-fighting-bg: #cce3a7;
   --card-color-border-middle: #917824;
+  --card-color-free-draw-used: #cec8b0;
   --card-color-danger-red: #dc6520;
   --card-color-danger-red-inactive: var(--card-color-bg);
   --card-color-danger-yellow: #f3e906;
@@ -155,6 +156,10 @@
   background-color: var(--card-color-bg);
   border: var(--card-item-border-width) solid var(--card-color-danger-border);
   font-size: var(--card-free-draw-font-size);
+}
+
+.card-hazard .free-draw.used {
+  background-color: var(--card-color-free-draw-used);
 }
 
 .card-hazard .free-draw.crossed::before { /* copy-paste */
@@ -432,6 +437,10 @@
   background-color: var(--card-color-bg);
   border: var(--card-item-border-width) solid var(--card-color-danger-border);
   font-size: var(--card-pirate-free-draw-font-size);
+}
+
+.card-pirate .free-draw.used {
+  background-color: var(--card-color-free-draw-used);
 }
 
 .card-pirate .free-draw.crossed::before { /* copy-paste */

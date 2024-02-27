@@ -106,7 +106,7 @@ export class Card {
     }
   }
 
-  get powerModified() {
+  get powerInFight() {
     if (this.power === 'X') throw new TypeError(`Trying to double the power of card, but card's power is "X"`)
 
     let pwr = this.power + fight.additionalPowerToAllCards

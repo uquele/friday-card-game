@@ -15,7 +15,7 @@ export class Deck {
   }
 
   get totalPower() {
-    return this.cards.reduce((sum, card) => sum + card.powerModified, 0)
+    return this.cards.reduce((sum, card) => sum + card.powerInFight, 0)
   }
 
   get totalDraw() {

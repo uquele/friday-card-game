@@ -12,7 +12,7 @@ function cardFightingHTML({ card, ignoredMaxPowerCards }) {
       ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       ${card.agingEffectName ? `<div class="effect-name effect-aging">${card.agingEffectName}</div>` : ""}
       <div class="lives ${card.removeCost === 2 ? 'two' : ''}">${card.removeCost === 1 ? `${healthIconHTML}` : `${healthIconHTML}${healthIconHTML}`}</div>
-      <div class="power ${card.effectDouble ? 'doubled' : ''} ${ignoredMaxPowerCards.includes(card) ? 'crossed' : ''}">${card.effectDouble ? card.power * 2 : card.power}</div>
+      <div class="power ${card.effectDouble ? 'doubled' : ''} ${ignoredMaxPowerCards.includes(card) ? 'crossed' : ''}">${card.powerModified}</div>
       <div class="mood">${card.name}</div>
     </div>
   </div>
@@ -38,7 +38,7 @@ function cardHazardHTML({ card, phaseInFight, ignoredMaxPowerCards, isStop }) {
     <div class="fighting-half">
       ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       <div class="lives ${card.removeCost === 2 ? 'two' : ''}">${card.removeCost === 1 ? `${healthIconHTML}` : `${healthIconHTML}${healthIconHTML}`}</div>
-      <div class="power ${card.effectDouble ? 'doubled' : ''} ${ignoredMaxPowerCards.includes(card) ? 'crossed' : ''}">${card.effectDouble ? card.power * 2 : card.power}</div>
+      <div class="power ${card.effectDouble ? 'doubled' : ''} ${ignoredMaxPowerCards.includes(card) ? 'crossed' : ''}">${card.powerModified}</div>
     </div>
   </div>
 </div>`
@@ -80,10 +80,11 @@ export function deckOpenHTML({ deck, phaseInFight = '', ignoredMaxPowerCards = [
 }
 
 export function deckClosedHTML(deck, { displayName, id }) {
+  const veryLow = id === 'deck-aging' && deck.length === 0
   return `
 <div class="deck" id="${id}">
   <div class="deck-name">${displayName}</div>
-  <div class="cards-in-deck">${deck.length}</div>
+  <div class="cards-in-deck ${veryLow ? 'very-low' : ''}">${deck.length}</div>
 </div>`
 }
 

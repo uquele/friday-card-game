@@ -106,12 +106,19 @@ html {
   animation: 0.3s ease-out 0s infinite alternate blink;
 }
 
+#deck-aging .very-low {
+  animation: 0.3s ease-out 0s infinite alternate blinkAging;
+}
+
 @keyframes blink {
-  from {
-    color: black
-  }
   to {
     color: rgb(204, 0, 0)
+  }  
+}
+
+@keyframes blinkAging {
+  to {
+    color: rgb(143, 74, 36)
   }  
 }
 

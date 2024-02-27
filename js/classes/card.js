@@ -1,3 +1,6 @@
+//should not be importing this. Not good
+import { fight } from "../../game.js"
+
 export class Card {
   constructor(cardObject) {
     setCorrectTypes(cardObject)
@@ -105,8 +108,11 @@ export class Card {
 
   get powerModified() {
     if (this.power === 'X') throw new TypeError(`Trying to double the power of card, but card's power is "X"`)
-    //@ts-ignore
-    return this.effectDouble ? this.power * 2 : this.power
+
+    let pwr = this.power + fight.additionalPowerToAllCards
+    if (this.effectDouble) pwr *= 2
+
+    return pwr
   }
 
   get drawModified() {
@@ -123,89 +129,7 @@ export class Card {
     this.additionalDraw = 0
     this.effectDouble = false
     this.copiedSkillName = undefined
+    this.additionalPower = 0
   }
-
 
 }
-
-
-/*
-
-export class CardFighting {
-  constructor({ id, type, name, power, skillName, removeCost }) {
-    checkForNoUndefinedValues(arguments[0])
-
-    this.id = +id
-    this.type = type
-    this.name = name
-    this.power = +power
-    this.skillName = skillName
-    this.removeCost = +removeCost
-
-    this.skillUsed = false
-    this.effectDouble = false
-  }
-}
-
-export class CardAging {
-  constructor({ id, type, name, power, removeCost, agingType, agingEffectName }) {
-    checkForNoUndefinedValues(arguments[0])
-
-    this.id = +id
-    this.type = type
-    this.name = name
-    this.power = +power
-    this.removeCost = +removeCost
-    this.agingType = agingType
-    this.agingEffectName = agingEffectName
-
-    this.skillUsed = false
-    this.effectDouble = false
-  }
-}
-
-export class CardHazard {
-  constructor({ id, type, name, power, skillName, removeCost, phaseGreen, phaseYellow, phaseRed, draw }) {
-    checkForNoUndefinedValues(arguments[0])
-
-    this.id = +id
-    this.type = type
-    this.name = name
-    this.power = +power
-    this._skillName = skillName
-    this.removeCost = +removeCost
-    this.phaseGreen = +phaseGreen
-    this.phaseYellow = +phaseYellow
-    this.phaseRed = +phaseRed
-    this.draw = +draw
-
-    this.fightingSide = false
-    this.skillUsed = false
-    this.additionalDraw = 0
-    this.effectDouble = false
-    this.copiedSkillName = undefined
-  }
-
-  get skillName() {
-    return this.copiedSkillName || this._skillName
-  }
-
-  set skillName(name) {
-    this._skillName = name
-  }
-}
-
-export class CardPirates {
-  constructor({ id, type, name, power, draw, pirateEffectName }) {
-    checkForNoUndefinedValues(arguments[0])
-
-    this.id = +id
-    this.type = type
-    this.name = name
-    this.power = power === 'X' ? 'X' : +power
-    this.draw = draw === 'X' ? 'X' : +draw
-    this.pirateEffectName = pirateEffectName
-  }
-}
-
-*/

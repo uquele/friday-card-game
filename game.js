@@ -38,9 +38,11 @@ const game = {
   }
 }
 
-const fight = {
+// should not be exporting this. Not good
+export const fight = {
   phaseIndexAdditional: 0,
   livesLostThisFight: 0,
+  additionalPowerToAllCards: 0,
 
   get phase() {
     return game.phases[this.phaseIndex]
@@ -59,6 +61,7 @@ const fight = {
 
   removeAllModifications() {
     this.phaseIndexAdditional = 0
+    this.additionalPowerToAllCards = 0
 
     const allCards = [...deckLeft.cards, ...deckCenter.cards, ...deckRight.cards]
     allCards.forEach(card => card.removeModifications())
@@ -93,8 +96,8 @@ const fight = {
     const totalPower = fight.allCards.reduce((sum, card) => {
       //@ts-ignore
       if (fight.ignoredMaxPowerCards.includes(card)) return sum
-      if (card.effectDouble) return sum + card.power * 2
-      return sum + card.power
+      if (card.effectDouble) return sum + card.powerModified * 2
+      return sum + card.powerModified
     }, 0)
 
     return totalPower - deckCenter.totalObstacle(fight.phase)
@@ -197,12 +200,22 @@ const UI = {
     $('#health-icons').innerHTML = healthIconHTMLs
     $('#lives-amount').innerText = game.lives;
     
-    if (game.lives === 0) {
+    if (game.lives <= 1) {
       $('#lives-amount').classList.add('very-low')
     } else {
       $('#lives-amount').classList.remove('very-low')
     }
-    if (game.lives < 0) $('#game-over').innerText = 'ROBINSON DIED FROM FAILING HEALTH'
+    if (game.lives < 0) {
+      $('#game-over').innerText = 'ROBINSON DIED FROM FAILING HEALTH'
+      $('#help').innerText = ''
+      deckCenter.removeAllCards()
+      deckLeft.removeAllCards()
+      deckRight.removeAllCards()
+      UI.removeAllEvents()
+      UI.hideAllButtons()
+      UI.drawDecks()
+      return
+    } 
   },
 
   // events
@@ -301,6 +314,9 @@ const deckHazard = new Deck(CARDS.filter(card => card.type === 'hazard'))
 const deckPirates = new Deck(CARDS.filter(card => card.type === 'pirates'))
 const deckAging = new Deck()
 
+//purely for esthetics of the initial board
+deckAging.addCards([...deckAgingOld.cards, ...deckAgingVeryOld.cards])
+
 // created during the game
 const deckFightingDiscard = new Deck()
 const deckHazardDiscard = new Deck()
@@ -343,7 +359,7 @@ $('#vision-discard-no-cards').addEventListener('click', visionDiscardNoCardsClic
 function startGame() {
   UI.hideAllButtons()
 
-  $('#help').innerText = 'Choose difficulty level'
+  $('#help').innerText = 'Choose difficulty level:'
   $('#difficulty-1').hidden = false
   $('#difficulty-2').hidden = false
   $('#difficulty-3').hidden = false
@@ -371,6 +387,9 @@ function setDifficulty4Click() {
 }
 
 function setDifficulty() {
+  // the was purely for esthetics of the initial screen
+  deckAging.removeAllCards()
+
   deckFighting.shuffle()
   deckHazard.shuffle()
   deckAgingOld.shuffle() // ->
@@ -381,25 +400,23 @@ function setDifficulty() {
   if (![1, 2, 3, 4].includes(game.difficultyLevel)) throw new Error(`Unexpected difficulty level: ${game.difficultyLevel}`)
 
   if (game.difficultyLevel >= 1) {
-    deckAgingOld.removeCard(cardVeryStupid)
+    deckAgingOld.removeCard(cardVeryStupid) // aging cards = 10
     game.livesMax = 22
     game.lives = 20
   }
   if (game.difficultyLevel >= 2) {
-    deckFighting.addCard(deckAgingOld.drawCard('random'))
+    deckFighting.addCard(deckAgingOld.drawCard('random')) // aging cards = 10
   }
   if (game.difficultyLevel >= 3) {
-    deckAgingOld.addCard(cardVeryStupid)
+    deckAgingOld.addCard(cardVeryStupid) // aging cards = 11
   }
-  if (game.difficultyLevel === 4) {
+  if (game.difficultyLevel === 4) {  // aging cards = 11
     game.livesMax = 20
     game.lives = 18
   }
 
   deckAging.addCards(deckAgingVeryOld.removeAllCards()) // <-
   deckAging.addCards(deckAgingOld.removeAllCards())  // <-
-
-  console.log(deckAging)
 
   while (deckPirates.length > 2) {
     deckPirates.drawCard('random')
@@ -516,7 +533,30 @@ function discardHazardClick() {
 // during fight
 
 function fightingDeckClick() {
-  if (deckFighting.length === 0) fightingDeckRestock()
+  // pirate modifiers //
+  
+  if (deckCenter.cards.find(card => card.pirateEffectName === 'Each of your cards has +1 power')) {
+    fight.additionalPowerToAllCards = 1
+  }
+
+  const pirateCardBeatUnbeaten = deckCenter.cards.find(card => card.pirateEffectName === 'You have to beat all unbeaten danger cards at once')
+  if (pirateCardBeatUnbeaten) {
+    deckCenter.removeCard(pirateCardBeatUnbeaten)
+    deckCenter.addCards(deckHazard.removeAllCards())
+    deckCenter.addCards(deckHazardDiscard.removeAllCards())
+  }
+
+  const pirateCardPowerX = deckCenter.cards.find(card => card.pirateEffectName === 'Power X is number of aging cards added to game x2')
+  if (pirateCardPowerX) {
+    pirateCardPowerX.power = game.difficultyLevel >= 3 ? 11 * 2 : 10 * 2 // overriding original value. Not good
+  }
+
+  //regular action //
+
+  if (deckFighting.length === 0) {
+    fightingDeckRestock()
+    return
+  } 
 
   const freeDraw = deckLeft.length < deckCenter.totalDraw && !fight.isEffectStop
 
@@ -524,6 +564,9 @@ function fightingDeckClick() {
     deckLeft.addCard(deckFighting.drawCard())
   } else {
     game.lives--
+    if (deckCenter.cards.find(card => card.pirateEffectName === 'Each extra card drawn costs 2 life instead of 1')) game.lives--
+    if (game.lives < 0) return // Fail safe. Not good.
+
     deckRight.addCard(deckFighting.drawCard())
   }
 
@@ -533,11 +576,20 @@ function fightingDeckClick() {
 function fightingDeckRestock() {
   if (deckAging.length === 0) {
     $('#game-over').innerText = 'ROBINSON DIED FROM OLD AGE'
+    $('#help').innerText = ''
+    deckCenter.removeAllCards()
+    deckLeft.removeAllCards()
+    deckRight.removeAllCards()
+    UI.removeAllEvents()
+    UI.hideAllButtons()
+    UI.drawDecks()
+    return
   }
   deckFightingDiscard.addCard(deckAging.drawCard())
   deckFightingDiscard.shuffle()
   deckFighting.addCards(deckFightingDiscard.removeAllCards())
 
+  fightingDeckClick()
 }
 
 function useCardEffectClick(event) {
@@ -564,7 +616,7 @@ function useCardEffectClick(event) {
       break
 
     case 'Stage -1':
-      if (fight.phase === 'green') return
+      if (fight.phase === 'green' || game.phase === 'pirates') return
       fight.phaseIndexAdditional--
       cardClicked.skillUsed = true
       UI.updateInterfaceForFight()
@@ -859,6 +911,7 @@ function endFightClick() {
 
   fight.calculateLivesLostThisFight()
   game.lives = game.lives - fight.livesLostThisFight - fight.agingCardLifeLoss
+  if (game.lives < 0) return // Fail safe. Not good
 
   const won = fight.livesLostThisFight === 0
 
@@ -879,7 +932,18 @@ function endFightClick() {
     chooseAHazard() // loops
 
   } else {
-    if (game.phase === 'pirates') $('#game-over').innerText = 'ROBINSON DIED TO PIRATES'
+    if (game.phase === 'pirates') {
+      $('#game-over').innerText = 'ROBINSON DIED TO PIRATES'
+      $('#help').innerText = ''
+
+      deckCenter.removeAllCards() // in order to get rid of them from the view. Not good.
+      deckLeft.removeAllCards() // in order to get rid of them from the view. Not good.
+      deckRight.removeAllCards() // in order to get rid of them from the view. Not good.
+      UI.drawDecks()
+      UI.removeAllEvents()
+      UI.hideAllButtons()
+      return
+    } 
     $('#help').innerText = `Go to next fight or remove your played fighting cards for health points lost during this fight`
 
     UI.hideAllButtons()
@@ -919,29 +983,4 @@ function nextFightClick() {
 }
 
 //#endregion
-
-
-
-// switch (difficultyLevel) {
-//   case 1:
-//     removeCard({ name: 'Very stupid' }, deckAging)
-//     break
-//   case 2:
-//     removeCard({ name: 'Very stupid' }, deckAging)
-//     deckFighting.push(drawCard(deckAging, 'random'))
-//     break
-//   case 3:
-//     deckFighting.push(drawCard(deckAging, 'random'))
-//     break
-//   case 4:
-//     lives = 18
-//     livesMax = 20
-//     deckFighting.push(drawCard(deckAging, 'random'))
-//     break
-//   default:
-//     throw new TypeError(`Difficulty level not found: ${level}`)
-// }
-
-
-
 

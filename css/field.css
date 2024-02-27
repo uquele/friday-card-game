@@ -5,55 +5,56 @@
   user-select: none;
 }
 
+/* LAYOUT */
+
 html {
   background-color: #d1bfa2;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ac9c7e' fill-opacity='0.4'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 #field {
+  height: 100vh;
+  padding: 10px;
+
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas: 
-  "deckHazardDiscard    pirates      deckAgingAndFightingDiscard"
-  "deckHazard           dashboard    deckFighting"
-  "playArea             playArea     playArea";
-  
-  --margin: 10px;
-  margin: var(--margin);
-  width: calc(100vw - var(--margin) * 2);
-  height: calc(100vh - var(--margin) * 2);
+  "a1 a2 a3"
+  "a4 a5 a6"
+  "a7 a7 a7";
+
+  gap: 10px;
 }
 
-#field > * {
+#field > div:nth-child(7) {
+  grid-area: a7;
+}
+
+#field > div {
   border: 1px dashed black;
-  display: grid;
+  display: flex;
   align-items: center;
+  gap: 10px;
 }
 
-#grid-deck-pirates {
-  grid-area: pirates;
+#field > div:nth-child(2),
+#field > div:nth-child(5),
+#field > div:nth-child(7) {
+  justify-content: center;
+}
+
+#field > div:nth-child(3),
+#field > div:nth-child(6) {
+  justify-content: right;
+}
+
+/* DECKS */
+
+#deck-pirates {
   display: flex;
   justify-content: center;
   gap: 10px;
-}
-
-#grid-deck-hazard {
-  grid-area: deckHazard;
-}
-
-#grid-deck-aging-and-fighting-discard {
-  grid-area: deckAgingAndFightingDiscard;
-  display: flex;
-  gap: 10px;
-  justify-content: right;
-}
-
-#grid-deck-vision-and-fighting {
-  grid-area: deckFighting;
-  display: flex;
-  gap: 20px;
-  justify-content: right;
 }
 
 #deck-vision {
@@ -62,21 +63,31 @@ html {
   align-items: center;
 }
 
-#grid-deck-hazard-discard {
-  grid-area: deckHazardDiscard;
+#deck-aging .very-low {
+  animation: 0.3s ease-out 0s infinite alternate blinkAging;
 }
 
-#grid-dashboard {
-  grid-area: dashboard;
+@keyframes blinkAging {
+  to {
+    color: rgb(143, 74, 36)
+  }  
+}
+
+/* DASHBOARD */
+
+#dashboard {
+  height: 100%;
+  width: 100%;
   display: grid;
   grid-template-rows: 2fr 1fr 1fr 2fr;
   grid-template-columns: 1fr;
+  place-items: center;
   font-size: 20px;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 #lives {
-  text-align: right;
+  justify-self: right;
   font-size: 45px;
   font-weight: bold;
   
@@ -97,27 +108,19 @@ html {
 }
 
 #lives-amount {
-  padding: 0 20px 0 10px;
   width: 80px;
+  display: flex;
+  justify-content: center;
+  text-align: right
 }
 
 #lives-amount.very-low {
   animation: 0.3s ease-out 0s infinite alternate blink;
 }
 
-#deck-aging .very-low {
-  animation: 0.3s ease-out 0s infinite alternate blinkAging;
-}
-
 @keyframes blink {
   to {
     color: rgb(221, 0, 0)
-  }  
-}
-
-@keyframes blinkAging {
-  to {
-    color: rgb(143, 74, 36)
   }  
 }
 
@@ -130,18 +133,22 @@ html {
 #game-over {
   font-size: 30px;
 }
-#grid-dashboard .buttons {
+
+#dashboard .buttons {
   display: flex;
   justify-content: center;
   gap: 10px;
 }
 
-#grid-dashboard button {
+#dashboard button {
   padding: 10px;
 }
 
-#grid-play-area {
-  grid-area: playArea;
+/* PLAY AREA  */
+
+#play-area {
+  height: 100%;
+  width: 100%;
   padding: 10px;
   display: flex;
   gap: 20px;

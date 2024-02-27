@@ -18,7 +18,7 @@ const UI = {
     $('#deck-fighting-discard').outerHTML =  deckClosedDiscardHTML(deckFightingDiscard, '#deck-fighting-discard', 'Fighting')
     
     deckPirates.length <= 2
-      ? $('#deck-pirates').outerHTML = deckOpenHTML(deckPirates, '#deck-pirates', fight)
+      ? $('#deck-pirates').outerHTML = deckOpenHTML(deckPirates, '#deck-pirates')
       : $('#deck-pirates').outerHTML = deckClosedHTML(deckPirates, '#deck-pirates', 'Pirates')
       
     $('#deck-hazard').outerHTML = deckClosedHTML(deckHazard, '#deck-hazard', 'Hazard')

@@ -12,7 +12,7 @@ function cardFightingHTML({ card, fight }) {
       ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       ${card.agingEffectName ? `<div class="effect-name effect-aging">${card.agingEffectName}</div>` : ""}
       <div class="lives ${card.removeCost === 2 ? 'two' : ''}">${card.removeCost === 1 ? `${healthIconHTML}` : `${healthIconHTML}${healthIconHTML}`}</div>
-      <div class="power ${card.effectDouble ? 'doubled' : ''} ${fight?.ignoredHighest0Cards.includes(card) ? 'crossed' : ''}">${card.powerInFight}</div>
+      <div class="power ${card.effectDouble ? 'doubled' : ''} ${fight?.ignoredHighest0Cards.includes(card) || fight?.halfZeroPowerCards.includes(card) ? 'crossed' : ''}">${card.powerInFight}</div>
       <div class="mood">${card.name}</div>
     </div>
   </div>
@@ -38,7 +38,7 @@ function cardHazardHTML({ card, fight }) {
     <div class="fighting-half">
       ${card.skillName ? `<div class="effect-name ${card.skillUsed ? 'crossed' : ''}">${card.skillName}</div>` : ""}
       <div class="lives ${card.removeCost === 2 ? 'two' : ''}">${card.removeCost === 1 ? `${healthIconHTML}` : `${healthIconHTML}${healthIconHTML}`}</div>
-      <div class="power ${card.effectDouble ? 'doubled' : ''} ${fight?.ignoredHighest0Cards.includes(card) ? 'crossed' : ''}">${card.powerInFight}</div>
+      <div class="power ${card.effectDouble ? 'doubled' : ''} ${fight?.ignoredHighest0Cards.includes(card) || fight?.halfZeroPowerCards.includes(card) ? 'crossed' : ''}">${card.powerInFight}</div>
     </div>
   </div>
 </div>`

@@ -380,6 +380,29 @@ export const fight = {
     return ignoredHighest0Cards
   },
 
+  get halfZeroPowerCards() {
+    if (deckCenter.cards.find(card => card.pirateEffectName !== 'Only half of your cards (round up) have any power')) return []
+
+    const requiredAmount = Math.floor(fight.allCards.length / 2)
+    const cardsWithZeroPower = this.ignoredHighest0Cards
+
+    while (cardsWithZeroPower.length < requiredAmount) {
+      let minPower = Infinity
+      let minPowerCard
+
+      fight.allCards.forEach(card => {
+        if (card.powerInFight < minPower) {
+          minPower = card.powerInFight
+          minPowerCard = card
+        }
+      })
+
+      cardsWithZeroPower.push(minPowerCard)      
+    }
+
+    return cardsWithZeroPower
+  },
+
   get agingCardLifeLoss() {
     let sum = 0;
     sum += fight.allCards.filter(card => card.agingEffectName === 'Life -1').length
@@ -391,6 +414,8 @@ export const fight = {
     const totalPower = fight.allCards.reduce((sum, card) => {
       //@ts-ignore
       if (fight.ignoredHighest0Cards.includes(card)) return sum
+      //@ts-ignore
+      if (fight.halfZeroPowerCards.includes(card)) return sum
       return sum + card.powerInFight
     }, 0)
 

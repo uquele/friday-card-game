@@ -218,12 +218,18 @@ const UI = {
 
   gameOver(message) {
     $('#game-over').innerText = message
-    UI.help('')
+    UI.help(`Score: ${game.score.total}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.remainingLifePoints}\nDifficulty: ${game.difficultyLevel}`)
     UI.showButtons(['#play-again'])
 
-    deckCenter.removeAllCards() // in order to get rid of them from the view. Not good.
-    deckLeft.removeAllCards()   // in order to get rid of them from the view. Not good.
-    deckRight.removeAllCards()  // in order to get rid of them from the view. Not good.
+    deckCenter.removeAllCards().forEach(card => {
+      card.type === 'pirates'
+        ? deckPirates.addCard(card)
+        : deckHazardDiscard.addCard(card)
+      }
+    )
+
+    deckFightingDiscard.addCards(deckLeft.removeAllCards())
+    deckFightingDiscard.addCards(deckRight.removeAllCards())
     UI.drawDecks()
     UI.removeAllEvents()
   },
@@ -237,6 +243,15 @@ const game = {
   phaseIndex: 0,
   isGameOver: false,
   isGameWon: undefined,
+  score: {
+    fightingCards: undefined,
+    defeatedPirates: undefined,
+    remainingLifePoints: undefined,
+    unbeatenHazards: undefined,
+    get total() {
+      return this.fightingCards + this.defeatedPirates + this.remainingLifePoints + this.unbeatenHazards
+    }
+  },
 
   get lives() {
     return this._lives
@@ -284,7 +299,19 @@ const game = {
         throw new Error(`Unexpected game over reason: ${reason}`)
     }
 
+    game.calculateFinalScore()
     UI.gameOver(message)
+  },
+
+  calculateFinalScore() {
+    game.score.fightingCards = [...deckFighting.cards, ...deckFightingDiscard.cards].reduce((sum, card) => {
+      if (card.type === 'aging') return sum - 5
+      return sum + card.power
+    }, 0)
+  
+    game.score.defeatedPirates = (2 - deckPirates.length) * 15
+    game.score.remainingLifePoints = game.lives * 5
+    game.score.unbeatenHazards = (deckHazard.length + deckHazardDiscard.length) * -3
   },
 }
 
@@ -1024,6 +1051,8 @@ function nextFightClick() {
 function playAgainClick() {
   location.reload()
 }
+
+
 
 //#endregion
 

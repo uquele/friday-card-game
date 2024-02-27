@@ -218,7 +218,7 @@ const UI = {
 
   gameOver(message) {
     $('#game-over').innerText = message
-    UI.help(`Score: ${game.score.total}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.remainingLifePoints}\nDifficulty: ${game.difficultyLevel}`)
+    UI.help(`Score: ${game.score.total}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
     UI.showButtons(['#play-again'])
 
     deckCenter.removeAllCards().forEach(card => {
@@ -310,7 +310,7 @@ const game = {
     }, 0)
   
     game.score.defeatedPirates = (2 - deckPirates.length) * 15
-    game.score.remainingLifePoints = game.lives * 5
+    game.score.remainingLifePoints = game.lives > 0 ? game.lives * 5 : 0
     game.score.unbeatenHazards = (deckHazard.length + deckHazardDiscard.length) * -3
   },
 }
@@ -381,7 +381,7 @@ export const fight = {
   },
 
   get halfZeroPowerCards() {
-    if (deckCenter.cards.find(card => card.pirateEffectName !== 'Only half of your cards (round up) have any power')) return []
+    if (!deckCenter.cards.find(card => card.pirateEffectName === 'Only half of your cards (round up) have any power')) return []
 
     const requiredAmount = Math.floor(fight.allCards.length / 2)
     const cardsWithZeroPower = this.ignoredHighest0Cards
@@ -391,6 +391,8 @@ export const fight = {
       let minPowerCard
 
       fight.allCards.forEach(card => {
+        //@ts-ignore
+        if (cardsWithZeroPower.includes(card)) return
         if (card.powerInFight < minPower) {
           minPower = card.powerInFight
           minPowerCard = card
@@ -399,7 +401,6 @@ export const fight = {
 
       cardsWithZeroPower.push(minPowerCard)      
     }
-
     return cardsWithZeroPower
   },
 
@@ -642,7 +643,7 @@ function fightingDeckClick() {
 
   const pirateCardBeatUnbeaten = deckCenter.cards.find(card => card.pirateEffectName === 'You have to beat all unbeaten danger cards at once')
   if (pirateCardBeatUnbeaten) {
-    // option 1 - do as the game tells you
+    // option 1 - do as the game tells you, but be aware that the scoring will not work correctly
     // deckCenter.removeCard(pirateCardBeatUnbeaten)
     // deckCenter.addCards(deckHazard.removeAllCards())
     // deckCenter.addCards(deckHazardDiscard.removeAllCards())
@@ -846,7 +847,7 @@ function useCardEffectClick(event) {
 // vision - start
 
 function applyEffectVisionTakeCardClick() {
-  const cantTakeMoreCards = deckFighting.length === 0 && deckVision.length > 3
+  const cantTakeMoreCards = deckFighting.length === 0 || deckVision.length > 3
   if (cantTakeMoreCards) return
 
   deckVision.addCard(deckFighting.drawCard('top'))

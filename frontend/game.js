@@ -268,24 +268,24 @@ const game = {
    * @param {'survived' | 'old age' | 'no health' | 'lost to pirates'} reason 
    */
   gameOver(reason) {
-    this.isGameOver = true
+    game.isGameOver = true
     let message
 
     switch (reason) {
       case 'survived':
-        this.gameWon = true
+        game.isGameWon = true
         message = 'ROBINSON SURVIVED!'
         break;
       case 'old age':
-        this.gameWon = false
+        game.isGameWon = false
         message = 'ROBINSON DIED FROM OLD AGE'
         break;
       case 'no health':
-        this.gameWon = false
+        game.isGameWon = false
         message = 'ROBINSON DIED FROM FAILING HEALTH'
         break
       case 'lost to pirates':
-        this.gameWon = false
+        game.isGameWon = false
         message = 'ROBINSON DIED TO PIRATES'
         break
       default:
@@ -479,10 +479,12 @@ UI.drawDecks()
 UI.setButtonEvents()
 
 UI.help('Help Robinson survive the hazards and 2 pirate ships!')
-UI.showButtons(['#start-game'])
+UI.showButtons(['#start-game']);
 
-            // await not in async function!!!!!! Not good.
-if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+
+(async() => {
+  if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+})()
 
 //#endregion
 

@@ -10,7 +10,6 @@ export async function httpPostObj(object) {
   const response = await fetch(url, { method, headers, body})
   const json = await response.json()
 
-  console.log(json)
   return json
 }
 

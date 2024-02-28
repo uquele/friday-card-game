@@ -7,7 +7,7 @@ const fs = require('node:fs')
 const bodyParser = require('body-parser')
 
 const PORT = 5005
-const IP = '127.0.0.1'
+const IP = '192.168.88.197'
 const FILE = 'scores.csv'
 
 app.use(express.static(path.join(__dirname, '..', 'frontend')))

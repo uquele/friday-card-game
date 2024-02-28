@@ -302,8 +302,17 @@ const game = {
     deckFightingDiscard.addCards(deckLeft.removeAllCards())
     deckFightingDiscard.addCards(deckRight.removeAllCards())
 
-    game.calculateFinalScore()
-    httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
+    game.calculateFinalScore();
+
+    (async () => {
+      try {
+        const response = await httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
+        if (response?.message === 'Saved') {
+          $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+        }        
+      } catch {}
+    })()
+
     UI.gameOver(message)
   },
 
@@ -483,7 +492,9 @@ UI.showButtons(['#start-game']);
 
 
 (async() => {
-  if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+  try {
+    if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+  } catch {}
 })()
 
 //#endregion

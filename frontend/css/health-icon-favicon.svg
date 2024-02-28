@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32"
+   height="32"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   sodipodi:docname="health-icon.svg"
+   inkscape:export-filename="health-icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.2627451"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showguides="true"
+     inkscape:zoom="26.237014"
+     inkscape:cx="28.299714"
+     inkscape:cy="3.5636677"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:export-bgcolor="#ffffff00">
+    <sodipodi:guide
+       position="10.054235,-31.738425"
+       orientation="1,0"
+       id="guide2"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#61a526;fill-opacity:1;stroke:#026d00;stroke-width:0.382457;stroke-dasharray:none;stroke-opacity:1"
+       d="m 10.395171,26.986255 2.758137,0.905036 0.726426,-2.213816 c 0,0 3.761852,-0.583323 4.032892,-1.485533 C 18.309623,22.870427 22.219974,11.072163 23.73167,6.5731008 24.074049,5.5537421 23.88733,5.6522187 23.44585,5.5084418 22.279352,5.1285697 19.879725,8.1753465 18.258981,7.5656965 16.591906,6.9386186 16.413443,3.1821843 15.411386,2.8771127 14.940195,2.7336163 14.895188,2.4445088 14.55306,3.4326148 13.328137,6.9703565 10.645734,15.225378 8.6562645,21.288377 c -0.3424553,1.043647 2.5315125,3.46549 2.5315125,3.46549 z"
+       id="path1"
+       sodipodi:nodetypes="cccssssssscc" />
+  </g>
+</svg>

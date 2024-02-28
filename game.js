@@ -46,7 +46,7 @@ const UI = {
   updateLives() {
     const healthIconHTMLs = game.lives >= 0 ? healthIconHTML.repeat(game.lives) : ''
     $('#health-icons').innerHTML = healthIconHTMLs
-    $('#lives-amount').innerText = game.lives;
+    $('#lives-amount').innerText = game.lives
 
     if (game.lives <= 1) {
       $('#lives-amount').classList.add('very-low')
@@ -221,15 +221,6 @@ const UI = {
     UI.help(`Score: ${game.score.total}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
     UI.showButtons(['#play-again'])
 
-    deckCenter.removeAllCards().forEach(card => {
-      card.type === 'pirates'
-        ? deckPirates.addCard(card)
-        : deckHazardDiscard.addCard(card)
-      }
-    )
-
-    deckFightingDiscard.addCards(deckLeft.removeAllCards())
-    deckFightingDiscard.addCards(deckRight.removeAllCards())
     UI.drawDecks()
     UI.removeAllEvents()
   },
@@ -281,7 +272,7 @@ const game = {
     switch (reason) {
       case 'survived':
         this.gameWon = true
-        message = 'ROBINSON SURVIVED! WELL DONE'
+        message = 'ROBINSON SURVIVED!'
         break;
       case 'old age':
         this.gameWon = false
@@ -298,6 +289,16 @@ const game = {
       default:
         throw new Error(`Unexpected game over reason: ${reason}`)
     }
+
+    deckCenter.removeAllCards().forEach(card => {
+      card.type === 'pirates'
+        ? deckPirates.addCard(card)
+        : deckHazardDiscard.addCard(card)
+      }
+    )
+
+    deckFightingDiscard.addCards(deckLeft.removeAllCards())
+    deckFightingDiscard.addCards(deckRight.removeAllCards())
 
     game.calculateFinalScore()
     UI.gameOver(message)
@@ -649,7 +650,8 @@ function fightingDeckClick() {
 
   const pirateCardPowerX = deckCenter.cards.find(card => card.pirateEffectName === 'Power X is number of aging cards added to game x2')
   if (pirateCardPowerX) {
-    pirateCardPowerX.power = game.difficultyLevel >= 3 ? 11 * 2 : 10 * 2 // overriding original value. Not good
+    const startAmount = game.difficultyLevel >= 3 ? 11 : 10
+    pirateCardPowerX.power = (startAmount - deckAging.length) * 2 // overriding original value. Not good
   }
 
   //regular action //

@@ -71,7 +71,8 @@ html {
 
 @keyframes blinkAging {
   to {
-    color: rgb(143, 74, 36)
+    /* color: rgb(143, 74, 36); */
+    opacity: 0;
   }  
 }
 
@@ -122,8 +123,8 @@ html {
 
 @keyframes blink {
   to {
-    color: rgb(221, 0, 0);
-    /* opacity: 0; */
+    /* color: rgb(221, 0, 0); */
+    opacity: 0;
   }  
 }
 

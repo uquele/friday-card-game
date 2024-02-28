@@ -4,6 +4,7 @@ import { createAllCards } from "./js/card-creation/createAllCards.js"
 import { Card } from "./js/classes/card.js"
 import { Deck } from "./js/classes/deck.js"
 import { deckClosedHTML, deckClosedDiscardHTML, deckOpenHTML, healthIconHTML } from "./js/html-components/deckHTML.js"
+import { httpPing, httpPostObj } from "./network.js"
 
 
 function $(cssSelector) {
@@ -240,7 +241,8 @@ const game = {
     remainingLifePoints: undefined,
     unbeatenHazards: undefined,
     get total() {
-      return this.fightingCards + this.defeatedPirates + this.remainingLifePoints + this.unbeatenHazards
+      const total = this.fightingCards + this.defeatedPirates + this.remainingLifePoints + this.unbeatenHazards
+      return Number.isNaN(total) ? undefined : total
     }
   },
 
@@ -301,6 +303,7 @@ const game = {
     deckFightingDiscard.addCards(deckRight.removeAllCards())
 
     game.calculateFinalScore()
+    httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
     UI.gameOver(message)
   },
 
@@ -478,6 +481,8 @@ UI.setButtonEvents()
 UI.help('Help Robinson survive the hazards and 2 pirate ships!')
 UI.showButtons(['#start-game'])
 
+            // await not in async function!!!!!! Not good.
+if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
 
 //#endregion
 

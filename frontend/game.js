@@ -29,7 +29,11 @@ const UI = {
     $('#deck-vision').outerHTML = deckOpenHTML(deckVision, '#deck-vision', fight)
 
     $('#deck-left').outerHTML = deckOpenHTML(deckLeft, '#deck-left', fight)
-    $('#deck-center').outerHTML = deckOpenHTML(deckCenter, '#deck-center', fight)
+
+    deckCenter.cards.filter(card => card.type === 'pirates').length === 2  // Not good. Should add fighting state to fight
+      ? $('#deck-center').outerHTML = deckOpenHTML(deckCenter, '#deck-center')
+      : $('#deck-center').outerHTML = deckOpenHTML(deckCenter, '#deck-center', fight)
+    
     $('#deck-right').outerHTML = deckOpenHTML(deckRight, '#deck-right', fight)
   },
 

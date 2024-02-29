@@ -309,8 +309,14 @@ const game = {
         const response = await httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
         if (response?.message === 'Saved') {
           $('#play-again').innerText = `* ${$('#play-again').innerText} *`
-        }        
-      } catch {}
+
+        }
+        if (response?.message === 'Server error') {
+          $('#play-again').innerText = `*** ${$('#play-again').innerText} ***`
+        }
+      } catch {
+        
+      }
     })()
 
     UI.gameOver(message)

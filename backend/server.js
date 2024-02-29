@@ -3,7 +3,7 @@
 const express = require('express')
 const app = express()
 const path = require('node:path')
-const fs = require('node:fs')
+const fs = require('node:fs/promises')
 const bodyParser = require('body-parser')
 
 const PORT = 5005
@@ -36,19 +36,90 @@ app.post('/score', (req, res) => {
     const { score, isGameWon, difficultyLevel } = req.body
     const gameResult = isGameWon === undefined ? undefined : isGameWon ? 'survived' : 'died'
 
-    const newLine = `"${formattedDate}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`
-    
-    if (!fs.existsSync(FILE)) {
-      fs.appendFileSync(FILE, `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n`)
-    } 
-    fs.appendFileSync(FILE, `${newLine}\n`)
+    const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n`
+    const newLine = `"${formattedDate}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`;
 
-    res.json({ message: 'Saved' })
     console.log(`Received new scores: ${newLine}`)
 
+    fs.access(FILE, fs.constants.R_OK | fs.constants.W_OK)
+      .then(() => fs.appendFile(FILE, newLine))
+      .catch((error) => {
+        if (error.code === 'ENOENT') {
+          console.log(`New ${FILE} was created as it was not found`)
+          return fs.appendFile(FILE, firstLine + newLine)
+        } else {
+          return Promise.reject(error)
+        }
+      })
+      .then(() => getRankString())
+      .then((rankString) => res.json({ message: 'Saved', rankString }))
+      .catch(error => {
+        console.log(`Error with file ${FILE}. Code: ${error.code}. Message: ${error.message}`)
+        res.json({ message: 'Server error' })
+      })
+
   } catch (error) {
-    console.log(error.message)
+    console.log(`Error receiving scores. Code: ${error.code}. Message: ${error.message}`)
+    res.json({ message: 'Server error' })
   }
+
+  async function getRankString(scoreToCompare, difficulty) {
+    let csvString
+
+    try {
+      csvString = fs.readFile(FILE, 'utf-8')
+    } catch (error) {
+      console.log(`Error reading file ${FILE}. Code: ${error.code}. Message: ${error.message}`)
+      return ''
+    }
+
+    const scores = parseScores(csvString)
+    const scoresSameDifficulty = scores.filter(score => score.Difficulty === difficulty)
+    const scoresAboveOurs = scores.filter(score => score > scoreToCompare)
+
+    const totalGames = scoresSameDifficulty.length
+    const place = scoresAboveOurs.length + 1
+    return `${place}${th(place)} place (${totalGames} games in total)`
+
+
+    function parseScores(csvString) {
+      const scores = []
+      let keys
+
+      const lines = csvString.split('\n')
+
+      for (let i = 0; i < lines.length; i++) {
+        let dataArray = lines[i].split(',')
+        dataArray = dataArray.map(data => data.slice(1, -1))
+
+        if (i === 0) {
+          keys = dataArray
+          continue
+        }
+
+        const scoreObj = {}
+        for (let j = 0; i < keys.length; j++) {
+          scoreObj[keys[j]] = dataArray[j]
+        }
+
+        scores.push(scoreObj)
+      }
+
+      return scores
+
+    }
+
+    function th(n) {
+      const last2 = n % 100
+      if (last2 === 1) return 'st'
+      if (last2 === 2) return 'nd'
+      if (last2 === 3) return 'rd'
+      return 'th'
+    }
+
+  }
+
+
 
 })
 

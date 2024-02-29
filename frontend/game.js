@@ -683,6 +683,7 @@ function fightingDeckClick() {
 
   if (deckFighting.length === 0) {
     fightingDeckRestock()
+    fightingDeckClick()
     return
   }
 
@@ -708,8 +709,6 @@ function fightingDeckRestock() {
   deckFightingDiscard.addCard(deckAging.drawCard())
   deckFightingDiscard.shuffle()
   deckFighting.addCards(deckFightingDiscard.removeAllCards())
-
-  fightingDeckClick()
 }
 
 function useCardEffectClick(event) {

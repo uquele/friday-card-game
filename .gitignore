@@ -1,5 +1,6 @@
 backend/node_modules/
 backend/scores.csv
+frontend/drafting-cards/
 backend/node_modules/.package-lock.json
 backend/node_modules/.bin/mime
 backend/node_modules/.bin/mime.cmd

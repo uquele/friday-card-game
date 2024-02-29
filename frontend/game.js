@@ -524,7 +524,6 @@ function setDifficultyClick(event) {
 
   game.difficultyLevel = +event.target.dataset.level
 
-  game.gameOver('old age') ////////////////////////////////////////////////////
   if (![1, 2, 3, 4].includes(game.difficultyLevel)) throw new Error(`Unexpected difficulty level: ${game.difficultyLevel}`)
 
   const cardVeryStupid = deckAgingOld.cards.find(card => card.name === 'Very stupid')

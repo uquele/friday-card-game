@@ -1,0 +1,1 @@
+put under pile on fighting deck not having cards triggers fighting deck restock AND takes 1 card which it shouldn't do

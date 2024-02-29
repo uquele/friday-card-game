@@ -1,3 +1,4 @@
+//@ts-check
 'use strict'
 
 const express = require('express')
@@ -33,11 +34,25 @@ app.post('/score', (req, res) => {
   const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
   try {
+    /**
+     * @type {{
+     *   score: {
+     *     fightingCards: number
+     *     defeatedPirates: number
+     *     remainingLifePoints: number
+     *     unbeatenHazards: number
+     *     total: number
+     *   },
+     *   isGameWon: boolean,
+     *   difficultyLevel: 1 | 2 | 3 | 4
+     *   }
+     * }
+     */
     const { score, isGameWon, difficultyLevel } = req.body
     const gameResult = isGameWon === undefined ? undefined : isGameWon ? 'survived' : 'died'
 
     const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n`
-    const newLine = `"${formattedDate}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`;
+    const newLine = `\n"${formattedDate}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`;
 
     console.log(`Received new scores: ${newLine}`)
 
@@ -51,8 +66,11 @@ app.post('/score', (req, res) => {
           return Promise.reject(error)
         }
       })
-      .then(() => getRankString())
-      .then((rankString) => res.json({ message: 'Saved', rankString }))
+      .then(() => getRankString(score.total, difficultyLevel))
+      .then((rankString) => {
+        console.log(`Responded with place: ${rankString}`)
+        return res.json({ message: 'Saved', rankString })
+      })
       .catch(error => {
         console.log(`Error with file ${FILE}. Code: ${error.code}. Message: ${error.message}`)
         res.json({ message: 'Server error' })
@@ -63,11 +81,17 @@ app.post('/score', (req, res) => {
     res.json({ message: 'Server error' })
   }
 
+  /**
+   * 
+   * @param {number} scoreToCompare 
+   * @param { 1 | 2 | 3 | 4 } difficulty 
+   * @returns {Promise<string>}
+   */
   async function getRankString(scoreToCompare, difficulty) {
     let csvString
 
     try {
-      csvString = fs.readFile(FILE, 'utf-8')
+      csvString = await fs.readFile(FILE, 'utf-8')
     } catch (error) {
       console.log(`Error reading file ${FILE}. Code: ${error.code}. Message: ${error.message}`)
       return ''
@@ -75,13 +99,19 @@ app.post('/score', (req, res) => {
 
     const scores = parseScores(csvString)
     const scoresSameDifficulty = scores.filter(score => score.Difficulty === difficulty)
-    const scoresAboveOurs = scores.filter(score => score > scoreToCompare)
+    //@ts-ignore Not good.
+    const scoresAboveOurs = scoresSameDifficulty.filter(score => score.Total > scoreToCompare)
 
     const totalGames = scoresSameDifficulty.length
     const place = scoresAboveOurs.length + 1
     return `${place}${th(place)} place (${totalGames} games were played)`
 
 
+    /**
+     * 
+     * @param {string} csvString 
+     * @returns {Object<string, string | number>[]}
+     */
     function parseScores(csvString) {
       const scores = []
       let keys
@@ -89,6 +119,8 @@ app.post('/score', (req, res) => {
       const lines = csvString.split('\n')
 
       for (let i = 0; i < lines.length; i++) {
+        if (lines[i].trim() === '') continue
+
         let dataArray = lines[i].split(',')
         dataArray = dataArray.map(data => data.slice(1, -1))
 
@@ -97,9 +129,12 @@ app.post('/score', (req, res) => {
           continue
         }
 
+        /**
+         * @type {Object<string, string | number>}
+         */
         const scoreObj = {}
-        for (let j = 0; i < keys.length; j++) {
-          scoreObj[keys[j]] = dataArray[j]
+        for (let j = 0; j < keys.length; j++) {
+          scoreObj[keys[j]] = Number.isFinite(+dataArray[j]) ? +dataArray[j] : dataArray[j]
         }
 
         scores.push(scoreObj)
@@ -109,6 +144,11 @@ app.post('/score', (req, res) => {
 
     }
 
+    /**
+     * 
+     * @param {number} n 
+     * @returns { 'st' | 'nd' | 'rd' | 'th' }
+     */
     function th(n) {
       const last2 = n % 100
       if (last2 === 1) return 'st'

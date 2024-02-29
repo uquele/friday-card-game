@@ -50,7 +50,7 @@ app.post('/score', (req, res) => {
     const { score, isGameWon, difficultyLevel } = req.body
     const gameResult = isGameWon === undefined ? undefined : isGameWon ? 'survived' : 'died'
 
-    const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n`
+    const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n` // <- if you edit this, check for parsing below
     const newLine = `\n"${formattedDate}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`;
 
     console.log(`Received new scores: ${newLine}`)
@@ -98,7 +98,6 @@ app.post('/score', (req, res) => {
 
     const scores = parseScores(csvString)
     const scoresSameDifficulty = scores.filter(score => score.Difficulty === difficulty)
-    //@ts-ignore Not good.
     const scoresAboveOurs = scoresSameDifficulty.filter(score => score.Total > scoreToCompare)
 
     const totalGames = scoresSameDifficulty.length
@@ -107,33 +106,44 @@ app.post('/score', (req, res) => {
 
 
     /**
+     * @typedef {{
+     *   Date: string, 
+     *   IP: string, 
+     *   Difficulty: number, 
+     *   Result: number, 
+     *   Total: number, 
+     *   Fighting: number, 
+     *   Pirates: number, 
+     *   Lives: number, 
+     *   Hazards: number
+     * }} ScoreReceived
+     */
+    /**
      * 
      * @param {string} csvString 
-     * @returns {Object<string, string | number>[]}
+     * @returns {ScoreReceived[]}
      */
     function parseScores(csvString) {
       const scores = []
-      let keys
 
       const lines = csvString.split('\n')
 
-      for (let i = 0; i < lines.length; i++) {
+      for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim() === '') continue
 
         let dataArray = lines[i].split(',')
         dataArray = dataArray.map(data => data.slice(1, -1))
 
-        if (i === 0) {
-          keys = dataArray
-          continue
-        }
-
-        /**
-         * @type {Object<string, string | number>}
-         */
-        const scoreObj = {}
-        for (let j = 0; j < keys.length; j++) {
-          scoreObj[keys[j]] = Number.isFinite(+dataArray[j]) ? +dataArray[j] : dataArray[j]
+        const scoreObj = {
+          Date:        dataArray[0], 
+          IP:          dataArray[1],
+          Difficulty: +dataArray[2], 
+          Result:     +dataArray[3], 
+          Total:      +dataArray[4], 
+          Fighting:   +dataArray[5], 
+          Pirates:    +dataArray[6], 
+          Lives:      +dataArray[7], 
+          Hazards:    +dataArray[8]
         }
 
         scores.push(scoreObj)
@@ -158,13 +168,11 @@ app.post('/score', (req, res) => {
 
   }
 
-
-
 })
 
 app.post('/ping', (req, res) => {
   if (req.body === 'ping') {
     res.send('pong')
-    console.log('ping')
+    console.log('ping', req.socket.remoteAddress)
   }
 })

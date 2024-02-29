@@ -16,12 +16,12 @@ const UI = {
     // These ids are only for css. For event listeners use their own deck ids
 
     $('#deck-hazard-discard').outerHTML = deckClosedDiscardHTML(deckHazardDiscard, '#deck-hazard-discard', 'Hazard')
-    $('#deck-fighting-discard').outerHTML =  deckClosedDiscardHTML(deckFightingDiscard, '#deck-fighting-discard', 'Fighting')
-    
+    $('#deck-fighting-discard').outerHTML = deckClosedDiscardHTML(deckFightingDiscard, '#deck-fighting-discard', 'Fighting')
+
     deckPirates.length <= 2
       ? $('#deck-pirates').outerHTML = deckOpenHTML(deckPirates, '#deck-pirates')
       : $('#deck-pirates').outerHTML = deckClosedHTML(deckPirates, '#deck-pirates', 'Pirates')
-      
+
     $('#deck-hazard').outerHTML = deckClosedHTML(deckHazard, '#deck-hazard', 'Hazard')
     $('#deck-aging').outerHTML = deckClosedHTML(deckAging, '#deck-aging', 'Aging')
     $('#deck-fighting').outerHTML = deckClosedHTML(deckFighting, '#deck-fighting', 'Fighting')
@@ -217,9 +217,22 @@ const UI = {
     $('#help').innerText = message
   },
 
-  gameOver(message) {
-    $('#game-over').innerText = message
-    UI.help(`Score: ${game.score.total}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
+  gameOver(gameEndText, serverResponse) {
+    $('#game-over').innerText = gameEndText
+    UI.help(`Score: ${game.score.total}\n\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
+
+    ;(async () => {
+      serverResponse.then( ({ message, rankString }) => {
+        if (message === 'Saved') {
+          // $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+          UI.help(`Score: ${game.score.total}\n${rankString}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
+        }
+        if (message === 'Server error') {
+          $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+        }
+      })
+    })()
+
     UI.showButtons(['#play-again'])
 
     UI.drawDecks()
@@ -269,24 +282,24 @@ const game = {
    */
   gameOver(reason) {
     game.isGameOver = true
-    let message
+    let gameEndText
 
     switch (reason) {
       case 'survived':
         game.isGameWon = true
-        message = 'ROBINSON SURVIVED!'
+        gameEndText = 'ROBINSON SURVIVED!'
         break;
       case 'old age':
         game.isGameWon = false
-        message = 'ROBINSON DIED FROM OLD AGE'
+        gameEndText = 'ROBINSON DIED FROM OLD AGE'
         break;
       case 'no health':
         game.isGameWon = false
-        message = 'ROBINSON DIED FROM FAILING HEALTH'
+        gameEndText = 'ROBINSON DIED FROM FAILING HEALTH'
         break
       case 'lost to pirates':
         game.isGameWon = false
-        message = 'ROBINSON DIED TO PIRATES'
+        gameEndText = 'ROBINSON DIED TO PIRATES'
         break
       default:
         throw new Error(`Unexpected game over reason: ${reason}`)
@@ -296,7 +309,7 @@ const game = {
       card.type === 'pirates'
         ? deckPirates.addCard(card)
         : deckHazardDiscard.addCard(card)
-      }
+    }
     )
 
     deckFightingDiscard.addCards(deckLeft.removeAllCards())
@@ -304,22 +317,9 @@ const game = {
 
     game.calculateFinalScore();
 
-    (async () => {
-      try {
-        const response = await httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
-        if (response?.message === 'Saved') {
-          $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+    const serverResponse = httpPostObj({ score: game.score, isGameWon: game.isGameWon, difficultyLevel: game.difficultyLevel })
 
-        }
-        if (response?.message === 'Server error') {
-          $('#play-again').innerText = `*** ${$('#play-again').innerText} ***`
-        }
-      } catch {
-        
-      }
-    })()
-
-    UI.gameOver(message)
+    UI.gameOver(gameEndText, serverResponse)
   },
 
   calculateFinalScore() {
@@ -327,7 +327,7 @@ const game = {
       if (card.type === 'aging') return sum - 5
       return sum + card.power
     }, 0)
-  
+
     game.score.defeatedPirates = (2 - deckPirates.length) * 15
     game.score.remainingLifePoints = game.lives > 0 ? game.lives * 5 : 0
     game.score.unbeatenHazards = (deckHazard.length + deckHazardDiscard.length) * -3
@@ -418,7 +418,7 @@ export const fight = {
         }
       })
 
-      cardsWithZeroPower.push(minPowerCard)      
+      cardsWithZeroPower.push(minPowerCard)
     }
     return cardsWithZeroPower
   },
@@ -497,10 +497,10 @@ UI.help('Help Robinson survive the hazards and 2 pirate ships!')
 UI.showButtons(['#start-game']);
 
 
-(async() => {
+(async () => {
   try {
     if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
-  } catch {}
+  } catch { }
 })()
 
 //#endregion

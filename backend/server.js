@@ -79,7 +79,7 @@ app.post('/score', (req, res) => {
 
     const totalGames = scoresSameDifficulty.length
     const place = scoresAboveOurs.length + 1
-    return `${place}${th(place)} place (${totalGames} games in total)`
+    return `${place}${th(place)} place (${totalGames} games were played)`
 
 
     function parseScores(csvString) {

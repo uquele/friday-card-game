@@ -305,6 +305,8 @@ const game = {
         throw new Error(`Unexpected game over reason: ${reason}`)
     }
 
+    fight.removeAllModifications()
+
     deckCenter.removeAllCards().forEach(card => {
       card.type === 'pirates'
         ? deckPirates.addCard(card)

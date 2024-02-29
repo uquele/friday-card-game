@@ -1,0 +1,33 @@
+
+Wrong gameplay mechanics
+
+- keep destroyed cards on the table
+- pirates +1 power works incorrectly. It should just count +1 power per card, not adding it to card itself. This should also include destroyed cards
+
+- 
+
+- add destroyed deck
+- add ability to see cards in discard and destroyed piles
+- add ability to choose a card you want to exchange with, rather than choosing a random one (make sure to allow to cancel exchange from the beginning and not consume it)
+
+
+Convenience
+
+- add red color to Give up button
+- create a button to draw cards from fighting deck
+
+Additions
+
+- allow for vertical layout and larger fonts for mobile
+- reduce size of closed decks, open cards need more space
+
+- reduce amounts of rerendering by changing values rather than adding html blocks
+- add animations
+
+- add ability for other players to see how you play
+- add ability to play with them together as if they were sitting together
+
+Possible bugs
+
+- game showed a hazard card instead of 2 pirate cards on phase change. Happened only once on firefox mobile
+- there might be a bug with Double effect. It seems that the power difference is affected too much with this card is used

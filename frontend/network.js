@@ -1,5 +1,5 @@
 export async function httpPostObj(object) {
-  const url = '/score'
+  const url = './score'
   const method = 'POST'
   const headers = {
     'Accept': 'application/json',
@@ -13,17 +13,14 @@ export async function httpPostObj(object) {
   return json
 }
 
-export async function httpPing() {
-  const url = '/ping'
+export async function httpPingStatus() {
+  const url = './ping'
+
   const method = 'POST'
   const headers = { 'Content-Type': 'text/plain' }
-
-  const body = 'ping'
+  const body = ''
 
   const response = await fetch(url, { method, headers, body})
-  const text = await response.text()
 
-  console.log(text)
-
-  return text === 'pong'
+  return response.status
 }

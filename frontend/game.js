@@ -4,7 +4,7 @@ import { createAllCards } from "./js/card-creation/createAllCards.js"
 import { Card } from "./js/classes/card.js"
 import { Deck } from "./js/classes/deck.js"
 import { deckClosedHTML, deckClosedDiscardHTML, deckOpenHTML, healthIconHTML } from "./js/html-components/deckHTML.js"
-import { httpPing, httpPostObj } from "./network.js"
+import { httpPingStatus, httpPostObj } from "./network.js"
 
 
 function $(cssSelector) {
@@ -33,7 +33,7 @@ const UI = {
     deckCenter.cards.filter(card => card.type === 'pirates').length === 2  // Not good. Should add fighting state to fight
       ? $('#deck-center').outerHTML = deckOpenHTML(deckCenter, '#deck-center')
       : $('#deck-center').outerHTML = deckOpenHTML(deckCenter, '#deck-center', fight)
-    
+
     $('#deck-right').outerHTML = deckOpenHTML(deckRight, '#deck-right', fight)
   },
 
@@ -225,17 +225,17 @@ const UI = {
     $('#game-over').innerText = gameEndText
     UI.help(`Score: ${game.score.total}\n\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
 
-    ;(async () => {
-      serverResponse.then( ({ message, rankString }) => {
-        if (message === 'Saved') {
-          // $('#play-again').innerText = `* ${$('#play-again').innerText} *`
-          UI.help(`Score: ${game.score.total}\n${rankString}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
-        }
-        if (message === 'Server error') {
-          $('#play-again').innerText = `* ${$('#play-again').innerText} *`
-        }
-      })
-    })()
+      ; (async () => {
+        serverResponse.then(({ message, rankString }) => {
+          if (message === 'Saved') {
+            // $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+            UI.help(`Score: ${game.score.total}\n${rankString}\n\nFighting: ${game.score.fightingCards}, pirates: ${game.score.defeatedPirates}, lives: ${game.score.remainingLifePoints}, hazards: ${game.score.unbeatenHazards}\nDifficulty: ${game.difficultyLevel}`)
+          }
+          if (message === 'Server error') {
+            $('#play-again').innerText = `* ${$('#play-again').innerText} *`
+          }
+        })
+      })()
 
     UI.showButtons(['#play-again'])
 
@@ -505,7 +505,15 @@ UI.showButtons(['#start-game']);
 
 (async () => {
   try {
-    if (await httpPing()) $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+    const httpStatusCode = await httpPingStatus()
+    
+    if (httpStatusCode === 204) {
+      $('#start-game').innerText = `* ${$('#start-game').innerText} *`
+      return
+    }
+    if (httpStatusCode === 502) return
+    $('#start-game').innerText = `*** ${$('#start-game').innerText} ***`
+
   } catch { }
 })()
 

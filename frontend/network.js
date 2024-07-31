@@ -7,7 +7,7 @@ export async function httpPostObj(object) {
   }
   const body = JSON.stringify(object)
 
-  const response = await fetch(url, { method, headers, body})
+  const response = await fetch(url, { method, headers, body })
   const json = await response.json()
 
   return json

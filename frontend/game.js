@@ -328,7 +328,7 @@ const game = {
     UI.gameOver(gameEndText, serverResponse)
   },
 
-  calculateFinalScore() {
+calculateFinalScore() {
     game.score.fightingCards = [...deckFighting.cards, ...deckFightingDiscard.cards].reduce((sum, card) => {
       if (card.type === 'aging') return sum - 5
       return sum + card.power

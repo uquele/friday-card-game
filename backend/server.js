@@ -18,6 +18,7 @@ app.listen(PORT, IP, () => console.log(`Server is listening on ${IP}:${PORT}`))
 
 // ROUTES
 
+app.get('/',        (req, res) => res.redirect('/friday.html'))
 app.get('/friday/', (req, res) => res.redirect('/friday.html'))
 
 app.post('/friday/score', (req, res) => {

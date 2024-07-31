@@ -1,5 +1,5 @@
 export async function httpPostObj(object) {
-  const url = './score'
+  const url = './friday/score'
   const method = 'POST'
   const headers = {
     'Accept': 'application/json',
@@ -14,7 +14,7 @@ export async function httpPostObj(object) {
 }
 
 export async function httpPingStatus() {
-  const url = './ping'
+  const url = './friday/ping'
 
   const method = 'POST'
   const headers = { 'Content-Type': 'text/plain' }

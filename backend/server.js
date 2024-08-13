@@ -1,10 +1,14 @@
+//@ts-check
 'use strict'
 
 const express = require('express')
 const app = express()
 const path = require('node:path')
 const fs = require('node:fs/promises')
-const bodyParser = require('body-parser')
+// const bodyParser = require('body-parser')
+
+const formattedDate = require('./utils/formatted-date.js')
+const th = require('./utils/n-th.js')
 
 const PORT = 5005
 const IP = '127.0.0.1'
@@ -12,7 +16,7 @@ const FILE = 'scores.csv'
 
 app.use(express.static(path.join(__dirname, '..', 'frontend')))
 app.use(express.json())
-app.use(bodyParser.text({ type: 'text/plain' }));
+// app.use(bodyParser.text({ type: 'text/plain' }));
 
 app.listen(PORT, IP, () => console.log(`Server is listening on ${IP}:${PORT}`))
 
@@ -40,7 +44,7 @@ app.post('/friday/score', (req, res) => {
     const { score, isGameWon, difficultyLevel } = req.body
     const gameResult = isGameWon === undefined ? undefined : isGameWon ? 'survived' : 'died'
 
-    const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"\n` // <- if you edit this, check for parsing below
+    const firstLine = `"Date","IP","Difficulty","Result","Total","Fighting","Pirates","Lives","Hazards"` // <- if you edit this, check for parsing below
     const newLine = `\n"${formattedDate(new Date())}","${req.socket.remoteAddress}","${difficultyLevel}","${gameResult}","${score?.total}","${score?.fightingCards}","${score?.defeatedPirates}","${score?.remainingLifePoints}","${score?.unbeatenHazards}"`;
 
     console.log(`Received new scores: ${newLine}`)
@@ -143,51 +147,18 @@ app.post('/friday/score', (req, res) => {
 
     }
 
-    /**
-     * 
-     * @param {number} n 
-     * @returns { 'st' | 'nd' | 'rd' | 'th' }
-     */
-    function th(n) {
-      const last1 = n % 10
-      const last2 = n % 100
-      if (last1 === 1 && last2 !== 11) return 'st'
-      if (last1 === 2 && last2 !== 12) return 'nd'
-      if (last1 === 3 && last2 !== 13) return 'rd'
-      return 'th'
-    }
+
 
   }
 
 })
 
 app.post('/friday/ping', (req, res) => {
-  res.sendStatus(204)
   console.log('/ping', req.socket.remoteAddress)
+  res.sendStatus(204)
 })
 
 app.all('*', (req, res) => {
   console.log(req.method, req.url, 'route not specified')
-  res.statusCode = 404
-  res.end()
+  res.sendStatus(404)
 })
-
-// UTILS 
-
-/**
- * 
- * @param {Date} dateObj 
- * @returns {string} "1999-02-27 03:12:49"
- */
-function formattedDate(dateObj) {
-  const date = dateObj; // Use new Date() for the current date or new Date("2024-02-23T12:43:54") for a specific date
-
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Add  1 to get the correct month number and pad with  0
-  const day = date.getDate().toString().padStart(2, '0');
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}

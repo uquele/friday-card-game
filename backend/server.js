@@ -5,24 +5,28 @@ const express = require('express')
 const app = express()
 const path = require('node:path')
 const fs = require('node:fs/promises')
-// const bodyParser = require('body-parser')
 
 const formattedDate = require('./utils/formatted-date.js')
+const { openLinkInDefaultBrowser } = require('./utils/os.js')
 const th = require('./utils/n-th.js')
 
-const PORT = 5005
 const IP = '127.0.0.1'
+const PORT = 5005
 const FILE = 'scores.csv'
 
 app.use(express.static(path.join(__dirname, '..', 'frontend')))
 app.use(express.json())
-// app.use(bodyParser.text({ type: 'text/plain' }));
 
-app.listen(PORT, IP, () => console.log(`Server is listening on ${IP}:${PORT}`))
+app.listen(PORT, IP, () => {
+  const link = `http://${IP}:${PORT}`
+  
+  console.log(`Server is running on ${link}`)
+  openLinkInDefaultBrowser(link)
+})
 
 // ROUTES
 
-app.get('/',        (req, res) => res.redirect('/friday.html'))
+app.get('/', (req, res) => res.redirect('/friday.html'))
 app.get('/friday/', (req, res) => res.redirect('/friday.html'))
 
 app.post('/friday/score', (req, res) => {
@@ -129,15 +133,15 @@ app.post('/friday/score', (req, res) => {
         dataArray = dataArray.map(data => data.slice(1, -1))
 
         const scoreObj = {
-          Date:        dataArray[0], 
-          IP:          dataArray[1],
-          Difficulty: +dataArray[2], 
-          Result:     +dataArray[3], 
-          Total:      +dataArray[4], 
-          Fighting:   +dataArray[5], 
-          Pirates:    +dataArray[6], 
-          Lives:      +dataArray[7], 
-          Hazards:    +dataArray[8]
+          Date: dataArray[0],
+          IP: dataArray[1],
+          Difficulty: +dataArray[2],
+          Result: +dataArray[3],
+          Total: +dataArray[4],
+          Fighting: +dataArray[5],
+          Pirates: +dataArray[6],
+          Lives: +dataArray[7],
+          Hazards: +dataArray[8]
         }
 
         scores.push(scoreObj)

@@ -6,6 +6,13 @@ Rules (PDF): https://www.riograndegames.com/wp-content/uploads/2013/02/Friday.pd
 Official website: https://www.riograndegames.com/games/friday/  
 BoardGameGeek: https://boardgamegeek.com/boardgame/43570/friday  
 
+### How to launch the game
+
+1. Download and install [node.js](https://nodejs.org/)
+2. Download all files from this repository
+3. Open "backend" folder
+4. Run "npm start" in terminal
+
 ### About this version
 
 This is a playable web version of the game made by a student studying programming (hire me!).  
